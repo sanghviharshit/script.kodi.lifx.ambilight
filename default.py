@@ -1,8 +1,7 @@
-﻿import xbmc
+import xbmc
 import xbmcgui
 import xbmcaddon
-import json
-import time
+from time import time, sleep
 import sys
 import colorsys
 import os
@@ -22,10 +21,6 @@ from settings import *
 from tools import *
 from hue import *
 
-from lifxlan import *
-from copy import copy
-from time import sleep, time
-
 try:
   import requests
 except ImportError:
@@ -34,17 +29,8 @@ except ImportError:
 
 xbmc.log("Kodi Hue service started, version: %s" % __addonversion__)
 
-'''
-class settings():
-  def __init__( self, *args, **kwargs ):
-    self.debug = True
-    self.mode = 0
-    self.ambilight_min = 10000
-    self.ambilight_max = 30000
-    self.misc_disableshort = False
-'''
-
 capture = xbmc.RenderCapture()
+useLegacyApi = True
 fmt = capture.getImageFormat()
 # BGRA or RGBA
 # xbmc.log("Hue Capture Image format: %s" % fmt)
@@ -158,73 +144,6 @@ class MyPlayer(xbmc.Player):
       self.timer.stop()
     state_changed("stopped", self.duration)
 
-class Hue:
-  params = None
-  connected = None
-  last_state = None
-  light = None
-  dim_group = None
-  original_powers = None
-  original_colors = None
-
-  def __init__(self, settings, args):
-    self.logger = Logger()
-    settings.debug = True
-    if settings.debug:
-      self.logger.debug()
-    self.settings = settings
-
-    self.logger.debuglog("Starting discover")
-    self.test_connection()
-
-  def test_connection(self):
-    # test power control
-    print("Discovering lights...")
-    self.original_powers = lifx.get_power_all_lights()
-    self.original_colors = lifx.get_color_all_lights()
-    notify("Kodi Hue", "Connected")
-    self.connected = True
-
-  def dim_lights(self):
-    self.logger.debuglog("class Hue: dim lights")
-    self.last_state = "dimmed"
-    for bulb, color in self.original_colors:
-                dim = list(copy(color))
-                half_bright = int(dim[2]/3)
-                dim[2] = half_bright if half_bright >= 10000 else 10000
-                bulb.set_color(dim, 300, rapid=True)
-
-  def brighter_lights(self):
-    self.logger.debuglog("class Hue: brighter lights")
-    self.last_state = "brighter"
-    for bulb, color in self.original_colors:
-                dim = list(copy(color))
-                full_bright = 65000
-                dim[2] = full_bright
-                bulb.set_color(dim, 300, rapid=True)
-
-  def partial_lights(self):
-    self.logger.debuglog("class Hue: partial lights")
-    self.last_state = "partial"
-    for bulb, color in self.original_colors:
-                dim = list(copy(color))
-                half_bright = int(dim[2]/2)
-                dim[2] = half_bright if half_bright >= 10000 else 10000
-                bulb.set_color(dim, 300, rapid=True)
-
-  def update_settings(self):
-    self.logger.debuglog("class Hue: update settings")
-  
-  def restore_bulbs(self):
-    self.logger.debuglog("class Hue: restore bulbs")
-    print("Restoring original color to all lights...")
-    for light, color in self.original_colors:
-        light.set_color(color)
-
-    print("Restoring original power to all lights...")
-    for light, power in self.original_powers:
-        light.set_power(power)
-
 class HSVRatio:
   cyan_min = float(4.5/12.0)
   cyan_max = float(7.75/12.0)
@@ -249,7 +168,9 @@ class HSVRatio:
 
   def hue(self, fullSpectrum):
     if fullSpectrum != True:
-      if self.s > 0.01:
+      if self.h > 0.065 and self.h < 0.19:
+          self.h = self.h * 2.32
+      elif self.s > 0.01:
         if self.h < 0.5:
           #yellow-green correction
           self.h = self.h * 1.17
@@ -262,8 +183,8 @@ class HSVRatio:
             self.h = self.cyan_max
 
     h = int(self.h*65535) # on a scale from 0 <-> 65535
-    s = int(self.s*65535)
-    v = int(self.v*65535)
+    s = int(self.s*255)
+    v = int(self.v*255)
 
     if v < hue.settings.ambilight_min:
       v = hue.settings.ambilight_min
@@ -290,21 +211,19 @@ class Screenshot:
     hsvRatios = []
     hsvRatiosDict = {}
 
-    for i in range(360):
-      if spectrum.has_key(i):
-        #shift index to the right so that groups are centered on primary and secondary colors
-        colorIndex = int(((i+colorHueRatio/2) % 360)/colorHueRatio)
-        pixelCount = spectrum[i]
+    for i in spectrum:
+      #shift index to the right so that groups are centered on primary and secondary colors
+      colorIndex = int(((i+colorHueRatio/2) % 360)/colorHueRatio)
+      pixelCount = spectrum[i]
 
-        if hsvRatiosDict.has_key(colorIndex):
-          hsvr = hsvRatiosDict[colorIndex]
-          hsvr.average(i/360.0, saturation[i], value[i])
-          hsvr.ratio = hsvr.ratio + pixelCount / float(size)
-
-        else:
-          hsvr = HSVRatio(i/360.0, saturation[i], value[i], pixelCount / float(size))
-          hsvRatiosDict[colorIndex] = hsvr
-          hsvRatios.append(hsvr)
+      try:
+        hsvr = hsvRatiosDict[colorIndex]
+        hsvr.average(i/360.0, saturation[i], value[i])
+        hsvr.ratio = hsvr.ratio + pixelCount / float(size)
+      except KeyError:
+        hsvr = HSVRatio(i/360.0, saturation[i], value[i], pixelCount / float(size))
+        hsvRatiosDict[colorIndex] = hsvr
+        hsvRatios.append(hsvr)
 
     colorCount = len(hsvRatios)
     if colorCount > 1:
@@ -334,95 +253,103 @@ class Screenshot:
     value = {}
 
     size = int(len(pixels)/4)
-    pixel = 0
 
-    i = 0
-    s, v = 0, 0
+    v = 0
     r, g, b = 0, 0, 0
     tmph, tmps, tmpv = 0, 0, 0
-    
-    for i in range(size):
-      if fmtRGBA:
-        r = pixels[pixel]
-        g = pixels[pixel + 1]
-        b = pixels[pixel + 2]
-      else: #probably BGRA
-        b = pixels[pixel]
-        g = pixels[pixel + 1]
-        r = pixels[pixel + 2]
-      pixel += 4
 
+    for i in range(0, size, 4):
+      r, g, b = _rgb_from_pixels(pixels, i)
       tmph, tmps, tmpv = colorsys.rgb_to_hsv(float(r/255.0), float(g/255.0), float(b/255.0))
-      s += tmps
       v += tmpv
 
       # skip low value and saturation
-      if tmpv > 0.25:
-        if tmps > 0.33:
+      if tmpv > hue.settings.ambilight_threshold_value:
+        if tmps > hue.settings.ambilight_threshold_saturation:
           h = int(tmph * 360)
+          try:
+              spectrum[h] += 1
+              saturation[h] = (saturation[h] + tmps)/2
+              value[h] = (value[h] + tmpv)/2
+          except KeyError:
+              spectrum[h] = 1
+              saturation[h] = tmps
+              value[h] = tmpv
 
-          # logger.debuglog("%s \t set pixel r %s \tg %s \tb %s" % (i, r, g, b))
-          # logger.debuglog("%s \t set pixel h %s \ts %s \tv %s" % (i, tmph*100, tmps*100, tmpv*100))
-
-          if spectrum.has_key(h):
-            spectrum[h] += 1 # tmps * 2 * tmpv
-            saturation[h] = (saturation[h] + tmps)/2
-            value[h] = (value[h] + tmpv)/2
-          else:
-            spectrum[h] = 1 # tmps * 2 * tmpv
-            saturation[h] = tmps
-            value[h] = tmpv
-
-    overall_value = v / float(i)
-    # s_overall = int(s * 100 / i)
+    overall_value = 1
+    if int(i) != 0:
+      overall_value = v / float(len(pixels))
     return self.most_used_spectrum(spectrum, saturation, value, size, overall_value)
+
+
+def _rgb_from_pixels(pixels, index):
+  if fmtRGBA:
+    return _rgb_from_pixels_rgba(pixels, index)
+  else:  # probably BGRA
+    return _rgb_from_pixels_rgba(pixels, index)[::-1]
+
+
+def _rgb_from_pixels_rgba(pixels, index):
+  return [pixels[index + i] for i in range(3)]
 
 def run():
   player = MyPlayer()
   if player == None:
     logger.log("Cannot instantiate player. Bailing out")
     return
-    
-  monitor = MyMonitor()
-
-  last = 0
+  last = time()
 
   #logger.debuglog("starting run loop!")
   while not monitor.abortRequested():
 
-    waitTimeout = 1;
+    waitTimeout = 0.1;
 
     if hue.settings.mode == 0: # ambilight mode
-      waitTimeout = 0.1
-      now = time.time()
-      logger.debuglog("run loop delta: %f (%f/sec)" % ((now-last), 1/(now-last)))
+      now = time()
+      #logger.debuglog("run loop delta: %f (%f/sec)" % ((now-last), 1/(now-last)))
       last = now
 
+      startReadOut = False
+      vals = {}
+      ## live tv does not trigger playbackstart
+      if player.isPlayingVideo() and not player.playingvideo:
+        player.playingvideo = True
+        state_changed("started", player.getTotalTime())
+        continue
       if player.playingvideo: # only if there's actually video
         try:
-          if capture.waitForCaptureStateChangeEvent(200):
+          if useLegacyApi:
+            capture.waitForCaptureStateChangeEvent(200)
             #we've got a capture event
             if capture.getCaptureState() == xbmc.CAPTURE_STATE_DONE:
+              startReadOut = True
+          else:
+            vals = capture.getImage(200)
+            if len(vals) > 0 and player.playingvideo:
+              startReadOut = True
+          if startReadOut:
+            if useLegacyApi:
+              vals = capture.getImage()
+              screen = Screenshot(vals, capture.getWidth(), capture.getHeight())
+            else:
               screen = Screenshot(capture.getImage(), capture.getWidth(), capture.getHeight())
-              hsvRatios = screen.spectrum_hsv(screen.pixels, screen.capture_width, screen.capture_height)
-              if hue.settings.light == 0:
-                fade_light_hsv(hue.light, hsvRatios[0])
-              else:
-                fade_light_hsv(hue.light[0], hsvRatios[0])
-                if hue.settings.light > 1:
-                  #xbmc.sleep(4) #why?
-                  fade_light_hsv(hue.light[1], hsvRatios[1])
-                if hue.settings.light > 2:
-                  #xbmc.sleep(4) #why?
-                  fade_light_hsv(hue.light[2], hsvRatios[2])
+            hsvRatios = screen.spectrum_hsv(screen.pixels, screen.capture_width, screen.capture_height)
+            if hue.settings.light == 0:
+              fade_light_hsv(hue.light, hsvRatios[0])
+            else:
+              loop_index = 0
+              for l in hue.light:
+                fade_light_hsv(l, hsvRatios[loop_index % 3])
+                loop_index = loop_index + 1
         except ZeroDivisionError:
           logger.debuglog("no frame. looping.")
 
     if monitor.waitForAbort(waitTimeout):
+      #kodi requested an abort, lets get out of here.
       break
       
-  del player
-  del monitor
+  del player #might help with slow exit.
+  #del monitor
 
 def fade_light_hsv(light, hsvRatio):
   fullSpectrum = light.fullSpectrum
@@ -433,15 +360,10 @@ def fade_light_hsv(light, hsvRatio):
   vvec = v - light.valLast
   distance = math.sqrt(hvec**2 + svec**2 + vvec**2) #changed to squares for performance
   if distance > 0:
-    duration = int(3 + 27 * distance/255)
+    duration = int(3 + 27 * distance/255) #old algorithm
+    #duration = int(10 - 2.5 * distance/255) #todo - check if this is better ?
     # logger.debuglog("distance %s duration %s" % (distance, duration))
     light.set_light2(h, s, v, duration)
-
-    # color is a list of HSBK values: [hue (0-65535), saturation (0-65535), brightness (0-65535), Kelvin (2500-9000)]
-    k = 3500
-    color = [h,s,v,k]
-    # Lifxlan duration is in miliseconds
-    lifx.set_color_all_lights(color, duration*100, rapid=False)
 
 credits_time = None #test = 10
 credits_triggered = False
@@ -511,7 +433,10 @@ def state_changed(state, duration):
       if capture_height == 0:
         capture_height = capture_width #fix for divide by zero.
       logger.debuglog("capture %s x %s" % (capture_width, capture_height))
-      capture.capture(int(capture_width), int(capture_height), xbmc.CAPTURE_FLAG_CONTINUOUS)
+      if useLegacyApi:
+        capture.capture(int(capture_width), int(capture_height), xbmc.CAPTURE_FLAG_CONTINUOUS)
+      else:
+        capture.capture(int(capture_width), int(capture_height))
 
   if (state == "started" and hue.pauseafterrefreshchange == 0) or state == "resumed":
     if hue.settings.mode == 0 and hue.settings.ambilight_dim: #if in ambilight mode and dimming is enabled
@@ -521,7 +446,9 @@ def state_changed(state, duration):
       elif hue.settings.ambilight_dim_light > 0:
         for l in hue.ambilight_dim_light:
           l.dim_light()
-    hue.dim_lights()
+    else:
+      logger.debuglog("dimming lights")
+      hue.dim_lights()
   elif state == "paused" and hue.last_state == "dimmed":
     #only if its coming from being off
     if hue.settings.mode == 0 and hue.settings.ambilight_dim:
@@ -530,7 +457,8 @@ def state_changed(state, duration):
       elif hue.settings.ambilight_dim_light > 0:
         for l in hue.ambilight_dim_light:
           l.partial_light()
-    hue.partial_lights()
+    else:
+      hue.partial_lights()
   elif state == "stopped":
     if hue.settings.mode == 0 and hue.settings.ambilight_dim:
       if hue.settings.ambilight_dim_light == 0:
@@ -538,23 +466,26 @@ def state_changed(state, duration):
       elif hue.settings.ambilight_dim_light > 0:
         for l in hue.ambilight_dim_light:
           l.brighter_light()
-    hue.brighter_lights()
+    else:
+      hue.brighter_lights()
 
 if ( __name__ == "__main__" ):
-  logger = Logger()
+  try:
+    capture.getCaptureState()
+  except AttributeError:
+    useLegacyApi = False
   settings = MySettings()
+  logger = Logger()
+  monitor = MyMonitor()
   if settings.debug == True:
     logger.debug()
- 
+
   args = None
   if len(sys.argv) == 2:
     args = sys.argv[1]
   hue = Hue(settings, args)
   while not hue.connected and not monitor.abortRequested():
     logger.debuglog("not connected")
-    time.sleep(1)
+    sleep(1)
   run()
-  
-  del logger
-  del settings
 

@@ -5,7 +5,7 @@ import time
 import logging
 
 from tools import *
-
+from lifxlan import *
 try:
   import requests
 except ImportError:
@@ -19,7 +19,7 @@ class Hue:
   light = None
   ambilight_dim_light = None
   pauseafterrefreshchange = 0
-  lifx = LifxLAN()
+  lifx = None
   original_powers = None
   original_colors = None
 
@@ -29,39 +29,26 @@ class Hue:
     if settings.debug:
       self.logger.debug()
 
+    self.lifx = LifxLAN()
     #get settings
     self.settings = settings
     self._parse_argv(args)
 
-    #if there's a bridge user, lets instantiate the lights (only if we're connected).
-    if self.settings.bridge_user not in ["-", "", None] and self.connected:
+    if self.connected:
       self.update_settings()
 
     if self.params == {}:
       self.logger.debuglog("params: %s" % self.params)
       #if there's a bridge IP, try to talk to it.
-      if self.settings.bridge_ip not in ["-", "", None]:
-        result = self.test_connection()
-        if result:
-          self.update_settings()
+      result = self.test_connection()
+      if result:
+        self.update_settings()
     elif self.params['action'] == "discover":
       self.logger.debuglog("Starting discovery")
       notify("Lifx Bulbs Discovery", "starting")
       self.test_connection()
-      '''
-      hue_ip = self.start_autodiscover()
-      if hue_ip != None:
-        notify("Bridge Discovery", "Found bridge at: %s" % hue_ip)
-        username = self.register_user(hue_ip)
-        self.logger.debuglog("Updating settings")
-        self.settings.update(bridge_ip = hue_ip)
-        self.settings.update(bridge_user = username)
-        notify("Bridge Discovery", "Finished")
-        self.test_connection()
-        self.update_settings()
-      else:
-        notify("Bridge Discovery", "Failed. Could not find bridge.")
-      '''
+      notify("Lifx Bulbs Discovery", "Finished")
+      self.update_settings()
     elif self.params['action'] == "reset_settings":
       self.logger.debuglog("Reset Settings to default.")
       self.logger.debuglog(__addondir__)
@@ -88,14 +75,10 @@ class Hue:
     if self.settings.light == 0:
       self.light.flash_light()
     else:
-      self.light[0].flash_light()
-      if self.settings.light > 1:
+      for l in self.light:
+        l.flash_light()
         xbmc.sleep(1)
-        self.light[1].flash_light()
-      if self.settings.light > 2:
-        xbmc.sleep(1)
-        self.light[2].flash_light()
-    
+
   def _parse_argv(self, args):
     try:
         self.params = dict(arg.split("=") for arg in args.split("&"))
@@ -105,8 +88,8 @@ class Hue:
   def test_connection(self):
     self.logger.debuglog("testing connection")
     print("Discovering lights...")
-    self.original_powers = lifx.get_power_all_lights()
-    self.original_colors = lifx.get_color_all_lights()
+    self.original_powers = self.lifx.get_power_all_lights()
+    self.original_colors = self.lifx.get_color_all_lights()
     notify("Kodi Hue", "Connected")
     self.connected = True
     return self.connected
@@ -137,7 +120,7 @@ class Hue:
   #     elif action == "partial":
   #       lights.partial_light()
 
- def dim_lights(self):
+  def dim_lights(self):
     self.logger.debuglog("class Hue: dim lights")
     self.last_state = "dimmed"
     if self.settings.light == 0:
@@ -178,12 +161,17 @@ class Hue:
       self.logger.debuglog("creating Light instances")      
       #hps
       #
-      bulbs = lifx.get_lights()
+      bulbs = self.lifx.get_lights()
+      self.logger.debuglog("Number of bulbs " + str(self.lifx.num_lights))
+
       self.light = [None] * len(bulbs)
+      self.logger.debuglog("Number of bulbs " + str(len(self.light)))
+
       index = 0
       for bulb in bulbs:
         # Todo - check the light id from settings
-        self.light[index] = Light(bulb, self.settings)  
+        # self.logger.debuglog("Discovered {}".format(bulb.get_label()))
+        # self.light[index] = Light(bulb, self.settings)
         index = index + 1
         xbmc.sleep(1)
         
@@ -206,14 +194,15 @@ class Hue:
         self.ambilight_dim_light = Group(self.settings, self.settings.ambilight_dim_group_id)
       elif self.settings.ambilight_dim_light > 0:
         self.logger.debuglog("creating Light instances for ambilight dim")
-        
 
-        bulbs = lifx.get_lights()
+        bulbs = self.lifx.get_lights()
+        self.logger.debuglog("Number of bulbs " + str(self.lifx.num_lights))
+
         self.ambilight_dim_light = [None] * len(bulbs)
         index = 0
         for bulb in bulbs:
           # Todo - check the light id from settings
-          self.ambilight_dim_light[index] = Light(bulb, self.settings)  
+          #self.ambilight_dim_light[index] = Light(bulb, self.settings)
           index = index + 1
           xbmc.sleep(1)
         
@@ -360,11 +349,11 @@ class Light:
     
 
     if data["on"]:
-      self.light.set_power("on", data["durationtime"]*100, rapid=True)
+      self.light.set_power("on", time*100, rapid=True)
 
     # color is a list of HSBK values: [hue (0-65535), saturation (0-65535), brightness (0-65535), Kelvin (2500-9000)]
     k = 3500
-    color = [data["hue",data["sat",data["bri"],k]
+    color = [data["hue"],data["sat"]/255*65535,data["bri"]/255*65535,k]
     # Lifxlan duration is in miliseconds
     self.light.set_color(color, data["durationtime"]*100, rapid=True)
     #self.request_url_put("http://%s/api/%s/lights/%s/state" % \
@@ -449,7 +438,7 @@ class Group(Light):
     Light.__init__(self, settings.light1_id, settings)
     
     #hps
-    bulbs = lifx.get_lights()
+    bulbs = self.lifx.get_lights()
     for bulb in  bulbs:
       if bulb.get_group_label() == self.group_id:
         tmp = Light(bulb, settings)
@@ -508,8 +497,6 @@ class Group(Light):
       time = duration
 
     self.valLast = bri # moved after time calculation
-
-    #transitiontime in Philips Hue is uint16 - The duration of the transition from the light’s current state to the new state. This is given as a multiple of 100ms and defaults to 4 (400ms). For example, setting transitiontime:10 will make the transition last 1 second.
     data["transitiontime"] = time
     
     dataString = json.dumps(data)
@@ -523,7 +510,7 @@ class Group(Light):
 
       # color is a list of HSBK values: [hue (0-65535), saturation (0-65535), brightness (0-65535), Kelvin (2500-9000)]
       k = 3500
-      color = [data["hue",data["sat",data["bri"],k]
+      color = [data["hue"],data["sat"],data["bri"],k]
       # Lifxlan duration is in miliseconds
       self.lights[group_light].set_color(color, data["durationtime"]*100, rapid=True)
 
