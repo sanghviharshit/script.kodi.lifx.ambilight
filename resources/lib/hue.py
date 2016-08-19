@@ -9,7 +9,7 @@ from lifxlan import *
 try:
   import requests
 except ImportError:
-  notify("Kodi Hue", "ERROR: Could not import Python requests")
+  notify("Kodi Lifx", "ERROR: Could not import Python requests")
 
 
 class Hue:
@@ -71,7 +71,7 @@ class Hue:
         self.flash_lights()
 
   def flash_lights(self):
-    self.logger.debuglog("class Hue: flashing lights")
+    self.logger.debuglog("class Lifx: flashing lights")
     if self.settings.light == 0:
       self.light.flash_light()
     else:
@@ -90,7 +90,7 @@ class Hue:
     print("Discovering lights...")
     self.original_powers = self.lifx.get_power_all_lights()
     self.original_colors = self.lifx.get_color_all_lights()
-    notify("Kodi Hue", "Connected")
+    notify("Kodi Lifx", "Connected")
     self.connected = True
     return self.connected
 
@@ -266,7 +266,7 @@ class Light:
     self.start_setting['on'] = power_on
     #HSBK
     color = self.light.get_color()
-    self.start_setting['bri'] = color[2]
+    self.start_setting['bri'] = int(color[2]/65535*255)
     
     self.onLast = self.start_setting['on']
     self.briLast = self.start_setting['bri']
@@ -275,10 +275,10 @@ class Light:
     self.fullSpectrum = True
     self.livingwhite = False
 
-    self.start_setting['hue'] = color[0]
-    self.start_setting['sat'] = color[1]
-    self.hueLast = color[0]
-    self.satLast = color[1]
+    self.start_setting['hue'] = int(color[0])
+    self.start_setting['sat'] = int(color[1]/65534*255)
+    self.hueLast = self.start_setting['hue']
+    self.satLast = self.start_setting['sat']
 
     self.logger.debuglog("light %s start settings: %s" % (self.light.get_label(), self.start_setting))
 
@@ -315,7 +315,7 @@ class Light:
         data["sat"] = self.start_setting["sat"]
         self.satLast = self.start_setting["sat"]
 
-    #self.logger.debuglog("light %s: onLast: %s, briLast: %s" % (self.light, self.onLast, self.briLast))
+    self.logger.debuglog("light %s: onLast: %s, briLast: %s" % (self.light.get_label(), self.onLast, self.briLast))
 
     '''
     if bri > 0:
@@ -353,16 +353,16 @@ class Light:
     data["transitiontime"] = time
     
     dataString = json.dumps(data)
-
     self.logger.debuglog("set_light2: %s: %s" % (self.light.get_label(), dataString))
-    
 
     #if data["on"]:
     #  self.light.set_power("on", time*100, rapid=True)
 
     # color is a list of HSBK values: [hue (0-65535), saturation (0-65535), brightness (0-65535), Kelvin (2500-9000)]
-    k = 3500
-    color = [data["hue"],data["sat"],data["bri"],k]
+    k = 5500
+    color = [int(data["hue"]),int(data["sat"]*65534/255),int(data["bri"]*65534/255),k]
+    self.logger.debuglog("set_light2: %s: %s" % (self.light.get_label(), color))
+
     # Lifxlan duration is in miliseconds
     self.light.set_color(color, data["transitiontime"]*100, rapid=False)
     #self.request_url_put("http://%s/api/%s/lights/%s/state" % \
@@ -519,7 +519,7 @@ class Group(Light):
 
       # color is a list of HSBK values: [hue (0-65535), saturation (0-65535), brightness (0-65535), Kelvin (2500-9000)]
       k = 5500
-      color = [data["hue"],data["sat"],data["bri"],k]
+      color = [int(data["hue"]), int(data["sat"] / 255 * 65534), int(data["bri"] / 255 * 65534), k]
       # Lifxlan duration is in miliseconds
       self.lights[group_light].set_color(color, data["transitiontime"]*100, rapid=False)
 
@@ -554,7 +554,7 @@ class Group(Light):
 
     #HSBK
     color = self.light.get_color()
-    self.start_setting['bri'] = color[2]
+    self.start_setting['bri'] = int(color[2]/65534*255)
 
     if self.force_light_group_start_override:
       for l in self.lights:
@@ -568,10 +568,10 @@ class Group(Light):
     self.fullSpectrum = True
     self.livingwhite = False
 
-    self.start_setting['hue'] = color[0]
-    self.start_setting['sat'] = color[1]
-    self.hueLast = color[0]
-    self.satLast = color[1]
+    self.start_setting['hue'] = int(color[0])
+    self.start_setting['sat'] = int(color[1]/65534*255)
+    self.hueLast = self.start_setting['hue']
+    self.satLast = self.start_setting['sat']
 
     self.logger.debuglog("light %s start settings: %s" % (self.light.get_label(), self.start_setting))
 

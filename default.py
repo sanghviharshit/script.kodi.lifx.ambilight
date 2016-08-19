@@ -5,7 +5,7 @@ from time import time, sleep
 import sys
 import colorsys
 import os
-import datetime
+from datetime import datetime
 import math
 from threading import Timer
 
@@ -25,9 +25,9 @@ try:
   import requests
 except ImportError:
   xbmc.log("ERROR: Could not locate required library requests")
-  notify("Kodi Hue", "ERROR: Could not import Python requests")
+  notify("Kodi Lifx", "ERROR: Could not import Python requests")
 
-xbmc.log("Kodi Hue service started, version: %s" % __addonversion__)
+xbmc.log("Kodi Lifx service started, version: %s" % __addonversion__)
 
 capture = xbmc.RenderCapture()
 fmt = capture.getImageFormat()
@@ -66,7 +66,7 @@ class MyMonitor( xbmc.Monitor ):
 
   def onSettingsChanged( self ):
     logger.debuglog("running in mode %s" % str(hue.settings.mode))
-    last = datetime.datetime.now()
+    last = datetime.now()
     hue.settings.readxml()
     hue.update_settings()
 
@@ -76,6 +76,7 @@ class MyPlayer(xbmc.Player):
   playlistlen = 0
   timer = None
   movie = False
+  framerate = 25
 
   def __init__(self):
     xbmc.Player.__init__(self)
@@ -85,7 +86,7 @@ class MyPlayer(xbmc.Player):
       check_time(int(self.getTime())) #call back out to plugin function.
 
   def onPlayBackStarted(self):
-    xbmc.log("Kodi Hue: DEBUG playback started called on player")
+    xbmc.log("Kodi Lifx: DEBUG playback started called on player")
     playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
     self.playlistlen = playlist.size()
     self.playlistpos = playlist.getposition()
@@ -104,7 +105,7 @@ class MyPlayer(xbmc.Player):
       state_changed("started", self.duration)
 
   def onPlayBackPaused(self):
-    xbmc.log("Kodi Hue: DEBUG playback paused called on player")
+    xbmc.log("Kodi Lifx: DEBUG playback paused called on player")
     if self.isPlayingVideo():
       self.playingvideo = False
       if self.movie and not self.timer is None:
@@ -125,7 +126,7 @@ class MyPlayer(xbmc.Player):
       state_changed("resumed", self.duration)
 
   def onPlayBackStopped(self):
-    xbmc.log("Kodi Hue: DEBUG playback stopped called on player")
+    xbmc.log("Kodi Lifx: DEBUG playback stopped called on player")
     self.playingvideo = False
     self.playlistlen = 0
     if self.movie and not self.timer is None:
@@ -133,7 +134,7 @@ class MyPlayer(xbmc.Player):
     state_changed("stopped", self.duration)
 
   def onPlayBackEnded(self):
-    xbmc.log("Kodi Hue: DEBUG playback ended called on player")
+    xbmc.log("Kodi Lifx: DEBUG playback ended called on player")
     # If there are upcoming plays, ignore 
     if self.playlistpos < self.playlistlen-1:
       return
@@ -181,9 +182,9 @@ class HSVRatio:
           if self.h < self.cyan_max:
             self.h = self.cyan_max
 
-    h = int(self.h*65534) # on a scale from 0 <-> 65534
-    s = int(self.s*65534)
-    v = int(self.v*65534)
+    h = int(self.h*65535) # on a scale from 0 <-> 65534
+    s = int(self.s*255)
+    v = int(self.v*255)
 
     if v < hue.settings.ambilight_min:
       v = hue.settings.ambilight_min
@@ -203,15 +204,13 @@ class Screenshot:
   def most_used_spectrum(self, spectrum, saturation, value, size, overall_value):
     # color bias/groups 6 - 36 in steps of 3
     colorGroups = settings.color_bias
-    if colorGroups == 0:
-      colorGroups = 1
     colorHueRatio = 360 / colorGroups
 
     hsvRatios = []
     hsvRatiosDict = {}
 
     for i in spectrum:
-      #shift index to the right so that groups are centered on primary and secondary colors
+      # shift index to the right so that groups are centered on primary and secondary colors
       colorIndex = int(((i+colorHueRatio/2) % 360)/colorHueRatio)
       pixelCount = spectrum[i]
 
@@ -229,11 +228,11 @@ class Screenshot:
       # sort colors by popularity
       hsvRatios = sorted(hsvRatios, key=lambda hsvratio: hsvratio.ratio, reverse=True)
       # logger.debuglog("hsvRatios %s" % hsvRatios)
-      
+
       #return at least 3
       if colorCount == 2:
         hsvRatios.insert(0, hsvRatios[0])
-      
+
       hsvRatios[0].averageValue(overall_value)
       hsvRatios[1].averageValue(overall_value)
       hsvRatios[2].averageValue(overall_value)
@@ -243,8 +242,7 @@ class Screenshot:
       hsvRatios[0].averageValue(overall_value)
       return [hsvRatios[0]] * 3
 
-    else:
-      return [HSVRatio()] * 3
+    return [HSVRatio()] * 3
 
   def spectrum_hsv(self, pixels, width, height):
     spectrum = {}
@@ -275,9 +273,7 @@ class Screenshot:
               saturation[h] = tmps
               value[h] = tmpv
 
-    overall_value = 1
-    if int(i) != 0:
-      overall_value = v / float(len(pixels))
+    overall_value = v / float(len(pixels))
     return self.most_used_spectrum(spectrum, saturation, value, size, overall_value)
 
 
@@ -300,8 +296,12 @@ def run():
 
   #logger.debuglog("starting run loop!")
   while not monitor.abortRequested():
+    waitTimeout = 0.5;
 
-    waitTimeout = 0.1;
+    if hue.settings.mode == 1:  # theater mode
+      if monitor.waitForAbort(waitTimeout):
+        # kodi requested an abort, lets get out of here.
+        break
 
     if hue.settings.mode == 0: # ambilight mode
       now = time()
@@ -313,39 +313,61 @@ def run():
           if monitor.waitForAbort(0.1):  # rate limit to 10/sec or less
             logger.debuglog("abort requested in ambilight loop")  # kodi requested an abort, lets get out of here.
             break
+          '''
+          if capture.waitForCaptureStateChangeEvent(200):
+            # we've got a capture event
+            if capture.getCaptureState() == xbmc.CAPTURE_STATE_DONE:
+              if player.playingvideo:
+                screen = Screenshot(capture.getImage(), capture.getWidth(), capture.getHeight())
+                hsvRatios = screen.spectrum_hsv(screen.pixels, screen.capture_width, screen.capture_height)
+                logger.debuglog("hsvRatios - {0}".format(hsvRatios))
+                if hue.settings.light == 0:
+                  fade_light_hsv(hue.light, hsvRatios[0])
+                else:
+                  for i, l in enumerate(hue.light):
+                    # xbmc.sleep(4) #why?
+                    logger.debuglog("fading light {0}".format(l.light.get_label()))
+                    fade_light_hsv(l, hsvRatios[i%3])
+          '''
           capture.waitForCaptureStateChangeEvent(200)
           # we've got a capture event
           if capture.getCaptureState() == xbmc.CAPTURE_STATE_DONE:
-            screen = Screenshot(capture.getImage(), capture.getWidth(), capture.getHeight())
-            hsvRatios = screen.spectrum_hsv(screen.pixels, screen.capture_width, screen.capture_height)
-            if hue.settings.light == 0:
-              fade_light_hsv(hue.light, hsvRatios[0])
-            else:
-              for i, l in enumerate(hue.light):
-                # xbmc.sleep(4) #why?
-                fade_light_hsv(l, hsvRatios[i%3])
+            if player.playingvideo:
+              screen = Screenshot(capture.getImage(), capture.getWidth(), capture.getHeight())
+              hsvRatios = screen.spectrum_hsv(screen.pixels, screen.capture_width, screen.capture_height)
+              #logger.debuglog("hsvRatios - {0}".format(hsvRatios))
+              if hue.settings.light == 0:
+                fade_light_hsv(hue.light, hsvRatios[0])
+              else:
+                loop_index = 0
+                for l in hue.light:
+                  hsvRatio = hsvRatios[loop_index % len(hsvRatios)]
+                  logger.debuglog("hsvRatio for {0} - {1}".format(l.light.get_label(),hsvRatio))
+                  fade_light_hsv(l, hsvRatio)
+                  loop_index = loop_index + 1
         except ZeroDivisionError:
           logger.debuglog("no frame. looping.")
+      else:
+        if monitor.waitForAbort(waitTimeout):
+          # kodi requested an abort, lets get out of here.
+          break
 
-    if monitor.waitForAbort(waitTimeout):
-      #kodi requested an abort, lets get out of here.
-      break
-      
   del player #might help with slow exit.
   #del monitor
 
 def fade_light_hsv(light, hsvRatio):
   fullSpectrum = light.fullSpectrum
   h, s, v = hsvRatio.hue(fullSpectrum)
-  hvec = abs(h - light.hueLast) % int(65534/2)
+  hvec = abs(h - light.hueLast) % int(65535/2)
   hvec = float(hvec/128.0)
   svec = s - light.satLast
   vvec = v - light.briLast
   distance = math.sqrt(hvec**2 + svec**2 + vvec**2) #changed to squares for performance
+  logger.debuglog("h - {0},s-{1},v-{2}, hueLast-{3}, satLast-{4}, briLast-{5}, distance {6}".format(h,s,v,light.hueLast,light.satLast,light.briLast,distance))
   if distance > 0:
-    duration = int(3 + 27 * distance/65534) #old algorithm
+    duration = int(3 + 27 * distance/255) #old algorithm
     #duration = int(10 - 2.5 * distance/255) #todo - check if this is better ?
-    # logger.debuglog("distance %s duration %s" % (distance, duration))
+    logger.debuglog("distance %s duration %s" % (distance, duration))
     light.set_light2(h, s, v, duration)
 
 credits_time = None #test = 10
@@ -416,7 +438,7 @@ def state_changed(state, duration):
       if capture_height == 0:
         capture_height = capture_width #fix for divide by zero.
       logger.debuglog("capture %s x %s" % (capture_width, capture_height))
-      capture.capture(int(capture_width), int(capture_height), xbmc.CAPTURE_FLAG_CONTINUOUS)
+      capture.capture(int(capture_width), int(capture_height))
 
   if (state == "started" and hue.pauseafterrefreshchange == 0) or state == "resumed":
     if hue.settings.mode == 0 and hue.settings.ambilight_dim: #if in ambilight mode and dimming is enabled

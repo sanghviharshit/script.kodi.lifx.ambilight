@@ -5,7 +5,7 @@
         <setting type="lsep" label="1000" />
         <!--Bridge-->
         <!--<setting type="lsep" label="1100" />-->
-        <setting id="discover_bridge" type="action" label="1101" action="RunScript(script.kodi.hue.ambilight,action=discover)" />
+        <setting id="discover_bridge" type="action" label="1101" action="RunScript(script.kodi.lifx.ambilight,action=discover)" />
         <!--<setting id="bridge_ip" type="text" label="1102" enable="!eq(-1,true)" default="" />-->
         <!--<setting id="bridge_user" type="text" label="1103" enable="!eq(-2,true)" default="" />-->
         <!--Mode-->
@@ -38,7 +38,7 @@
         <setting type="lsep" label="2200" />
         <setting id="override_hue" type="bool" label="2201" default="false" />
         <setting id="dimmed_hue" type="slider" label="2202" default="14910" visible="eq(-1,true)" range="0,1000,65534" option="int" />
-        <setting id="undim_hue" type="slider" label="2203" default="14910" visible="eq(-2,true)" range="0,1000,65534" option="int" />
+        <setting id="undim_hue" type="slider" label="2203" default="32767" visible="eq(-2,true)" range="0,1000,65534" option="int" />
         <setting id="override_sat" type="bool" label="2204" default="false" />
         <setting id="dimmed_sat" type="slider" label="2205" default="144" visible="eq(-1,true)" range="0,255" option="int" />
         <setting id="undim_sat" type="slider" label="2206" default="144" visible="eq(-2,true)" range="0,255" option="int" />
@@ -64,7 +64,7 @@
         <!--Brightness-->
         <setting type="lsep" label="3200" />
         <setting id="ambilight_min" label="3201" type="slider" default="0" range="0,5,100" option="int" />
-        <setting id="ambilight_max" label="3202" type="slider" default="90" range="0,5,100" option="int" />
+        <setting id="ambilight_max" label="3202" type="slider" default="90" range="0,25,100" option="int" />
         <!--Thresholds-->
         <setting type="lsep" label="3250" />
         <setting id="ambilight_threshold_value" label="3251" type="slider" default="0.25" range="0,0.01,1" option="float" />

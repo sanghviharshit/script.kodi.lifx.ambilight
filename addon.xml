@@ -7,10 +7,10 @@
   <extension point="xbmc.service" library="default.py"></extension>
   <extension point="xbmc.addon.metadata">
     <summary>Kodi-controlled Lifx lights</summary>
-    <description>Let Kodi control your Lifx lights. Either turns the lights into a room-sized ambilight (with slow response time), or automatically dims and un-dims them when playback starts.</description>
+    <description>Let Kodi control your Lifx lights. Either turns the lights into a room-sized ambilight, or automatically dims and un-dims them when playback starts.</description>
     <license>GNU General Public License, v2</license>
     <platform>all</platform>
-    <source>https://github.com/sanghviharshit</source>
+    <source>https://github.com/sanghviharshit/script.kodi.hue.ambilight/</source>
 	<email>hello@sanghviharshit.com</email>
   </extension>
 </addon>
