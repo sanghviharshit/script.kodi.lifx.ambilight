@@ -1,7 +1,7 @@
 import xbmc
 import socket
 import json
-import time
+from time import sleep
 import logging
 
 from tools import *
@@ -162,16 +162,16 @@ class Hue:
       #hps
       #
       bulbs = self.lifx.get_lights()
-      self.logger.debuglog("Number of bulbs " + str(self.lifx.num_lights))
-
+      #print(bulbs)
       self.light = [None] * len(bulbs)
       self.logger.debuglog("Number of bulbs " + str(len(self.light)))
 
       index = 0
       for bulb in bulbs:
+        #print(bulb.get_label())
         # Todo - check the light id from settings
-        # self.logger.debuglog("Discovered {}".format(bulb.get_label()))
-        # self.light[index] = Light(bulb, self.settings)
+        self.logger.debuglog("Discovered " + str(bulb.get_label()))
+        self.light[index] = Light(bulb, self.settings)
         index = index + 1
         xbmc.sleep(1)
         
@@ -202,7 +202,7 @@ class Hue:
         index = 0
         for bulb in bulbs:
           # Todo - check the light id from settings
-          #self.ambilight_dim_light[index] = Light(bulb, self.settings)
+          self.ambilight_dim_light[index] = Light(bulb, self.settings)
           index = index + 1
           xbmc.sleep(1)
         
@@ -252,19 +252,10 @@ class Light:
     self.onLast = True
     self.hueLast = 0
     self.satLast = 0
-    self.valLast = 0
+    self.briLast = 0
 
     self.get_current_setting()
     self.s = requests.Session()
-
-  def request_url_put(self, url, data):
-    #if self.start_setting['on']: #Why? 
-    try:
-      response = self.s.put(url, data=data)
-      self.logger.debuglog("response: %s" % response)
-    except:
-      self.logger.debuglog("exception in request_url_put")
-      pass # probably a timeout
 
   def get_current_setting(self):
     self.start_setting = {}
@@ -278,7 +269,7 @@ class Light:
     self.start_setting['bri'] = color[2]
     
     self.onLast = self.start_setting['on']
-    self.valLast = self.start_setting['bri']
+    self.briLast = self.start_setting['bri']
     
     #modelid = j['modelid']
     self.fullSpectrum = True
@@ -300,22 +291,33 @@ class Light:
 
     if self.start_setting["on"] == False and self.force_light_on == False:
       # light was not on, and settings say we should not turn it on
-      self.logger.debuglog("light %s was off, settings say we should not turn it on" % self.light)
+      self.logger.debuglog("light %s was off, settings say we should not turn it on" % self.light.get_label())
       return
 
     data = {}
 
     if not self.livingwhite:
       if not hue is None:
-        if not hue == self.hueLast:
-          data["hue"] = hue
-          self.hueLast = hue
-      if not sat is None:
-        if not sat == self.satLast:
-          data["sat"] = sat
-          self.satLast = sat
+        data["hue"] = hue
+        self.hueLast = hue
+      elif not self.hueLast is None:
+        data["hue"] = self.hueLast
+      else:
+        data["hue"] = self.start_setting["hue"]
+        self.hueLast = self.start_setting["hue"]
 
-    self.logger.debuglog("light %s: onLast: %s, valLast: %s" % (self.light, self.onLast, self.valLast))
+      if not sat is None:
+        data["sat"] = sat
+        self.satLast = sat
+      elif not self.satLast is None:
+        data["sat"] = self.satLast
+      else:
+        data["sat"] = self.start_setting["sat"]
+        self.satLast = self.start_setting["sat"]
+
+    #self.logger.debuglog("light %s: onLast: %s, briLast: %s" % (self.light, self.onLast, self.briLast))
+
+    '''
     if bri > 0:
       if self.onLast == False: #don't send on unless we have to (performance)
         data["on"] = True
@@ -324,12 +326,19 @@ class Light:
     else:
       data["on"] = False
       self.onLast = False
+    '''
+    if not bri is None:
+      data["bri"] = bri
+    elif not self.briLast is None:
+      data["bri"] = self.briLast
+    else:
+      data["bri"] = self.start_setting["bri"]
 
     time = 0
     if duration is None:
       if self.proportional_dim_time and self.mode != 0: #only if its not ambilight mode too
-        self.logger.debuglog("last %r, next %r, start %r, finish %r" % (self.valLast, bri, self.start_setting['bri'], self.dimmed_bri))
-        difference = abs(float(bri) - self.valLast)
+        self.logger.debuglog("last %r, next %r, start %r, finish %r" % (self.briLast, bri, self.start_setting['bri'], self.dimmed_bri))
+        difference = abs(float(bri) - self.briLast)
         total = float(self.start_setting['bri']) - self.dimmed_bri
         if total != 0:
           proportion = difference / total
@@ -339,7 +348,7 @@ class Light:
     else:
       time = duration
 
-    self.valLast = bri # moved after time calclation to know the previous value (important)
+    self.briLast = data["bri"] # moved after time calclation to know the previous value (important)
 
     data["transitiontime"] = time
     
@@ -348,20 +357,20 @@ class Light:
     self.logger.debuglog("set_light2: %s: %s" % (self.light.get_label(), dataString))
     
 
-    if data["on"]:
-      self.light.set_power("on", time*100, rapid=True)
+    #if data["on"]:
+    #  self.light.set_power("on", time*100, rapid=True)
 
     # color is a list of HSBK values: [hue (0-65535), saturation (0-65535), brightness (0-65535), Kelvin (2500-9000)]
     k = 3500
-    color = [data["hue"],data["sat"]/255*65535,data["bri"]/255*65535,k]
+    color = [data["hue"],data["sat"],data["bri"],k]
     # Lifxlan duration is in miliseconds
-    self.light.set_color(color, data["durationtime"]*100, rapid=True)
+    self.light.set_color(color, data["transitiontime"]*100, rapid=False)
     #self.request_url_put("http://%s/api/%s/lights/%s/state" % \
     #  (self.bridge_ip, self.bridge_user, self.light), data=dataString)
 
   def flash_light(self):
     self.dim_light()
-    time.sleep(self.dim_time/10)
+    sleep(self.dim_time/10)
     self.brighter_light()
 
   def dim_light(self):
@@ -436,7 +445,7 @@ class Group(Light):
       self.logger.debug()
 
     Light.__init__(self, settings.light1_id, settings)
-    
+
     #hps
     bulbs = self.lifx.get_lights()
     for bulb in  bulbs:
@@ -486,8 +495,8 @@ class Group(Light):
 
     if duration is None:
       if self.proportional_dim_time and self.mode != 0: #only if its not ambilight mode too
-        self.logger.debuglog("last %r, next %r, start %r, finish %r" % (self.valLast, bri, self.start_setting['bri'], self.dimmed_bri))
-        difference = abs(float(bri) - self.valLast)
+        self.logger.debuglog("last %r, next %r, start %r, finish %r" % (self.briLast, bri, self.start_setting['bri'], self.dimmed_bri))
+        difference = abs(float(bri) - self.briLast)
         total = float(self.start_setting['bri']) - self.dimmed_bri
         proportion = difference / total
         time = int(round(proportion * self.dim_time))
@@ -496,9 +505,9 @@ class Group(Light):
     else:
       time = duration
 
-    self.valLast = bri # moved after time calculation
+    self.briLast = bri # moved after time calculation
     data["transitiontime"] = time
-    
+
     dataString = json.dumps(data)
 
     self.logger.debuglog("set_light2: group_id %s: %s" % (self.group_id, dataString))
@@ -506,13 +515,13 @@ class Group(Light):
     for group_light in self.lights:
       if data["on"]:
         # Lifxlan duration is in miliseconds
-        self.lights[group_light].set_power("on", data["durationtime"]*100, rapid=True)
+        self.lights[group_light].set_power("on", data["transitiontime"]*100, rapid=False)
 
       # color is a list of HSBK values: [hue (0-65535), saturation (0-65535), brightness (0-65535), Kelvin (2500-9000)]
-      k = 3500
+      k = 5500
       color = [data["hue"],data["sat"],data["bri"],k]
       # Lifxlan duration is in miliseconds
-      self.lights[group_light].set_color(color, data["durationtime"]*100, rapid=True)
+      self.lights[group_light].set_color(color, data["transitiontime"]*100, rapid=False)
 
   # def dim_light(self):
   #   for light in self.lights:
@@ -553,7 +562,7 @@ class Group(Light):
           self.start_setting['bri'] = self.lights[l].start_setting['bri'] #take the brightest of the group.
 
     self.onLast = self.start_setting['on']
-    self.valLast = self.start_setting['bri']
+    self.briLast = self.start_setting['bri']
     
     #modelid = j['modelid']
     self.fullSpectrum = True

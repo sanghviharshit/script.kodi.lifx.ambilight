@@ -308,14 +308,14 @@ class Device(object):
     ############################################################################
 
     def device_characteristics_str(self, indent):
-        s = "{}\n".format(self.label)
-        s += indent + "MAC Address: {}\n".format(self.mac_addr)
-        s += indent + "IP Address: {}\n".format(self.ip_addr)
-        s += indent + "Port: {}\n".format(self.port)
-        s += indent + "Service: {}\n".format(SERVICE_IDS[self.service])
-        s += indent + "Power: {}\n".format(str_map(self.power_level))
-        s += indent + "Location: {}\n".format(self.location)
-        s += indent + "Group: {}\n".format(self.group)
+        s = "{0}\n".format(self.label)
+        s += indent + "MAC Address: {0}\n".format(self.mac_addr)
+        s += indent + "IP Address: {0}\n".format(self.ip_addr)
+        s += indent + "Port: {0}\n".format(self.port)
+        s += indent + "Service: {0}\n".format(SERVICE_IDS[self.service])
+        s += indent + "Power: {0}\n".format(str_map(self.power_level))
+        s += indent + "Location: {0}\n".format(self.location)
+        s += indent + "Group: {0}\n".format(self.group)
         return s
 
     def device_firmware_str(self, indent):
@@ -323,16 +323,16 @@ class Device(object):
         host_build_s = datetime.utcfromtimestamp(host_build_ns/1000000000) if host_build_ns != None else None
         wifi_build_ns = self.wifi_firmware_build_timestamp
         wifi_build_s = datetime.utcfromtimestamp(wifi_build_ns/1000000000) if wifi_build_ns != None else None
-        s = "Host Firmware Build Timestamp: {} ({} UTC)\n".format(host_build_ns, host_build_s)
-        s += indent + "Host Firmware Build Version: {}\n".format(self.host_firmware_version)
-        s += indent + "Wifi Firmware Build Timestamp: {} ({} UTC)\n".format(wifi_build_ns, wifi_build_s)
-        s += indent + "Wifi Firmware Build Version: {}\n".format(self.wifi_firmware_version)
+        s = "Host Firmware Build Timestamp: {0} ({1} UTC)\n".format(host_build_ns, host_build_s)
+        s += indent + "Host Firmware Build Version: {0}\n".format(self.host_firmware_version)
+        s += indent + "Wifi Firmware Build Timestamp: {0} ({1} UTC)\n".format(wifi_build_ns, wifi_build_s)
+        s += indent + "Wifi Firmware Build Version: {0}\n".format(self.wifi_firmware_version)
         return s
 
     def device_product_str(self, indent):
-        s = "Vendor: {}\n".format(self.vendor)
-        s += indent + "Product: {}\n".format(self.product)
-        s += indent + "Version: {}\n".format(self.version)
+        s = "Vendor: {0}\n".format(self.vendor)
+        s += indent + "Product: {0}\n".format(self.product)
+        s += indent + "Version: {0}\n".format(self.version)
         return s
 
     def device_time_str(self, indent):
@@ -340,16 +340,16 @@ class Device(object):
         time_s = datetime.utcfromtimestamp(time/1000000000) if time != None else None
         uptime_s = round(nanosec_to_hours(uptime), 2) if uptime != None else None
         downtime_s = round(nanosec_to_hours(downtime), 2) if downtime != None else None
-        s = "Current Time: {} ({} UTC)\n".format(time, time_s)
-        s += indent + "Uptime (ns): {} ({} hours)\n".format(uptime, uptime_s)
-        s += indent + "Last Downtime Duration +/-5s (ns): {} ({} hours)\n".format(downtime, downtime_s)
+        s = "Current Time: {0} ({1} UTC)\n".format(time, time_s)
+        s += indent + "Uptime (ns): {0} ({1} hours)\n".format(uptime, uptime_s)
+        s += indent + "Last Downtime Duration +/-5s (ns): {0} ({1} hours)\n".format(downtime, downtime_s)
         return s
 
     def device_radio_str(self, indent):
         signal, tx, rx = self.get_wifi_info_tuple()
-        s = "Wifi Signal Strength (mW): {}\n".format(signal)
-        s += indent + "Wifi TX (bytes): {}\n".format(tx)
-        s += indent + "Wifi RX (bytes): {}\n".format(rx)
+        s = "Wifi Signal Strength (mW): {0}\n".format(signal)
+        s += indent + "Wifi TX (bytes): {0}\n".format(tx)
+        s += indent + "Wifi RX (bytes): {0}\n".format(rx)
         return s
 
     def __str__(self):
@@ -424,7 +424,7 @@ class Device(object):
                 timedout = True if elapsed_time > timeout_secs else False
             attempts += 1
         if not success:
-            raise IOError("WorkflowException: Did not receive {} in response to {}".format(str(response_type), str(msg_type)))
+            raise IOError("WorkflowException: Did not receive {0} in response to {1}".format(str(response_type), str(msg_type)))
         self.close_socket()
         return device_response
 

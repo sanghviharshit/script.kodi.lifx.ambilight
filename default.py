@@ -182,9 +182,9 @@ class HSVRatio:
           if self.h < self.cyan_max:
             self.h = self.cyan_max
 
-    h = int(self.h*65535) # on a scale from 0 <-> 65535
-    s = int(self.s*255)
-    v = int(self.v*255)
+    h = int(self.h*65534) # on a scale from 0 <-> 65534
+    s = int(self.s*65534)
+    v = int(self.v*65534)
 
     if v < hue.settings.ambilight_min:
       v = hue.settings.ambilight_min
@@ -354,13 +354,13 @@ def run():
 def fade_light_hsv(light, hsvRatio):
   fullSpectrum = light.fullSpectrum
   h, s, v = hsvRatio.hue(fullSpectrum)
-  hvec = abs(h - light.hueLast) % int(65535/2)
+  hvec = abs(h - light.hueLast) % int(65534/2)
   hvec = float(hvec/128.0)
   svec = s - light.satLast
-  vvec = v - light.valLast
+  vvec = v - light.briLast
   distance = math.sqrt(hvec**2 + svec**2 + vvec**2) #changed to squares for performance
   if distance > 0:
-    duration = int(3 + 27 * distance/255) #old algorithm
+    duration = int(3 + 27 * distance/65534) #old algorithm
     #duration = int(10 - 2.5 * distance/255) #todo - check if this is better ?
     # logger.debuglog("distance %s duration %s" % (distance, duration))
     light.set_light2(h, s, v, duration)

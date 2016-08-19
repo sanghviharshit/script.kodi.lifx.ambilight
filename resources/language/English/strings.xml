@@ -74,6 +74,9 @@
   <string id="3301">Color Bias</string>
   <string id="3302">Sensitivity: 6=variety with >1 light, 36=accuracy</string>
 
+  <string id="3250">Thresholds</string>
+  <string id="3251">Value threshold</string>
+  <string id="3252">Saturation threshold</string>
   <!-- Advanced -->
   <string id="4000">Advanced</string>
 

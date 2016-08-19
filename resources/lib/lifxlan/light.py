@@ -51,7 +51,7 @@ class Light(Device):
             elif power in off and rapid:
                 self.fire_and_forget(LightSetPower, {"power_level": 0, "duration": duration}, num_repeats=5)
             else:
-                print("{} is not a valid power level.".format(power))
+                print("{0} is not a valid power level.".format(power))
         except WorkflowException as e:
             print(e)
 
@@ -87,7 +87,7 @@ class Light(Device):
         self.refresh()
         indent = "  "
         s = self.device_characteristics_str(indent)
-        s += indent + "Color (HSBK): {}\n".format(self.get_color())
+        s += indent + "Color (HSBK): {0}\n".format(self.get_color())
         s += indent + self.device_firmware_str(indent)
         s += indent + self.device_product_str(indent)
         s += indent + self.device_time_str(indent)
