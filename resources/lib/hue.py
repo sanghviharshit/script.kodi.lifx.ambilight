@@ -266,7 +266,7 @@ class Light:
     self.start_setting['on'] = power_on
     #HSBK
     color = self.light.get_color()
-    self.start_setting['bri'] = int(color[2]/65535*255)
+    self.start_setting['bri'] = int(color[2]*255/65535)
     
     self.onLast = self.start_setting['on']
     self.briLast = self.start_setting['bri']
@@ -276,7 +276,7 @@ class Light:
     self.livingwhite = False
 
     self.start_setting['hue'] = int(color[0])
-    self.start_setting['sat'] = int(color[1]/65534*255)
+    self.start_setting['sat'] = int(color[1]*255/65535)
     self.hueLast = self.start_setting['hue']
     self.satLast = self.start_setting['sat']
 
@@ -353,14 +353,16 @@ class Light:
     data["transitiontime"] = time
     
     dataString = json.dumps(data)
+
     self.logger.debuglog("set_light2: %s: %s" % (self.light.get_label(), dataString))
+    
 
     #if data["on"]:
     #  self.light.set_power("on", time*100, rapid=True)
 
     # color is a list of HSBK values: [hue (0-65535), saturation (0-65535), brightness (0-65535), Kelvin (2500-9000)]
     k = 5500
-    color = [int(data["hue"]),int(data["sat"]*65534/255),int(data["bri"]*65534/255),k]
+    color = [int(data["hue"]),int(data["sat"]*65535/255),int(data["bri"]*65535/255),k]
     self.logger.debuglog("set_light2: %s: %s" % (self.light.get_label(), color))
 
     # Lifxlan duration is in miliseconds
@@ -519,7 +521,7 @@ class Group(Light):
 
       # color is a list of HSBK values: [hue (0-65535), saturation (0-65535), brightness (0-65535), Kelvin (2500-9000)]
       k = 5500
-      color = [int(data["hue"]), int(data["sat"] / 255 * 65534), int(data["bri"] / 255 * 65534), k]
+      color = [int(data["hue"]), int(data["sat"]*65535/255), int(data["bri"]*65535/255), k]
       # Lifxlan duration is in miliseconds
       self.lights[group_light].set_color(color, data["transitiontime"]*100, rapid=False)
 
@@ -554,7 +556,7 @@ class Group(Light):
 
     #HSBK
     color = self.light.get_color()
-    self.start_setting['bri'] = int(color[2]/65534*255)
+    self.start_setting['bri'] = int(color[2]*255/65535)
 
     if self.force_light_group_start_override:
       for l in self.lights:
@@ -569,7 +571,7 @@ class Group(Light):
     self.livingwhite = False
 
     self.start_setting['hue'] = int(color[0])
-    self.start_setting['sat'] = int(color[1]/65534*255)
+    self.start_setting['sat'] = int(color[1]*255/65535)
     self.hueLast = self.start_setting['hue']
     self.satLast = self.start_setting['sat']
 
