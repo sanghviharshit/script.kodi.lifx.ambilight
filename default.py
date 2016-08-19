@@ -30,7 +30,6 @@ except ImportError:
 xbmc.log("Kodi Hue service started, version: %s" % __addonversion__)
 
 capture = xbmc.RenderCapture()
-useLegacyApi = True
 fmt = capture.getImageFormat()
 # BGRA or RGBA
 # xbmc.log("Hue Capture Image format: %s" % fmt)
@@ -309,38 +308,22 @@ def run():
       #logger.debuglog("run loop delta: %f (%f/sec)" % ((now-last), 1/(now-last)))
       last = now
 
-      startReadOut = False
-      vals = {}
-      ## live tv does not trigger playbackstart
-      if player.isPlayingVideo() and not player.playingvideo:
-        player.playingvideo = True
-        state_changed("started", player.getTotalTime())
-        continue
       if player.playingvideo: # only if there's actually video
         try:
-          if useLegacyApi:
-            capture.waitForCaptureStateChangeEvent(200)
-            #we've got a capture event
-            if capture.getCaptureState() == xbmc.CAPTURE_STATE_DONE:
-              startReadOut = True
-          else:
-            vals = capture.getImage(200)
-            if len(vals) > 0 and player.playingvideo:
-              startReadOut = True
-          if startReadOut:
-            if useLegacyApi:
-              vals = capture.getImage()
-              screen = Screenshot(vals, capture.getWidth(), capture.getHeight())
-            else:
-              screen = Screenshot(capture.getImage(), capture.getWidth(), capture.getHeight())
+          if monitor.waitForAbort(0.1):  # rate limit to 10/sec or less
+            logger.debuglog("abort requested in ambilight loop")  # kodi requested an abort, lets get out of here.
+            break
+          capture.waitForCaptureStateChangeEvent(200)
+          # we've got a capture event
+          if capture.getCaptureState() == xbmc.CAPTURE_STATE_DONE:
+            screen = Screenshot(capture.getImage(), capture.getWidth(), capture.getHeight())
             hsvRatios = screen.spectrum_hsv(screen.pixels, screen.capture_width, screen.capture_height)
             if hue.settings.light == 0:
               fade_light_hsv(hue.light, hsvRatios[0])
             else:
-              loop_index = 0
-              for l in hue.light:
-                fade_light_hsv(l, hsvRatios[loop_index % 3])
-                loop_index = loop_index + 1
+              for i, l in enumerate(hue.light):
+                # xbmc.sleep(4) #why?
+                fade_light_hsv(l, hsvRatios[i%3])
         except ZeroDivisionError:
           logger.debuglog("no frame. looping.")
 
@@ -433,10 +416,7 @@ def state_changed(state, duration):
       if capture_height == 0:
         capture_height = capture_width #fix for divide by zero.
       logger.debuglog("capture %s x %s" % (capture_width, capture_height))
-      if useLegacyApi:
-        capture.capture(int(capture_width), int(capture_height), xbmc.CAPTURE_FLAG_CONTINUOUS)
-      else:
-        capture.capture(int(capture_width), int(capture_height))
+      capture.capture(int(capture_width), int(capture_height), xbmc.CAPTURE_FLAG_CONTINUOUS)
 
   if (state == "started" and hue.pauseafterrefreshchange == 0) or state == "resumed":
     if hue.settings.mode == 0 and hue.settings.ambilight_dim: #if in ambilight mode and dimming is enabled
@@ -470,10 +450,6 @@ def state_changed(state, duration):
       hue.brighter_lights()
 
 if ( __name__ == "__main__" ):
-  try:
-    capture.getCaptureState()
-  except AttributeError:
-    useLegacyApi = False
   settings = MySettings()
   logger = Logger()
   monitor = MyMonitor()

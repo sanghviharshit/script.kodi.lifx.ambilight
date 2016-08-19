@@ -77,7 +77,7 @@ class Hue:
     else:
       for l in self.light:
         l.flash_light()
-        xbmc.sleep(1)
+        #xbmc.sleep(1)
 
   def _parse_argv(self, args):
     try:
@@ -127,7 +127,7 @@ class Hue:
       self.light.dim_light()
     elif self.settings.light > 0:
         for l in self.light:
-          xbmc.sleep(1)
+          #xbmc.sleep(1)
           l.dim_light()
     
   def brighter_lights(self):
@@ -138,7 +138,7 @@ class Hue:
     elif self.settings.light > 0:
         for l in self.light:
           l.dim_light()
-          xbmc.sleep(1)
+          #xbmc.sleep(1)
           l.brighter_light()
       
   def partial_lights(self):
@@ -148,7 +148,7 @@ class Hue:
       self.light.partial_light()
     elif self.settings.light > 0:
         for l in self.light:
-          xbmc.sleep(1)
+          #xbmc.sleep(1)
           l.partial_light()
       
   def update_settings(self):
@@ -173,7 +173,7 @@ class Hue:
         self.logger.debuglog("Discovered " + str(bulb.get_label()))
         self.light[index] = Light(bulb, self.settings)
         index = index + 1
-        xbmc.sleep(1)
+        #xbmc.sleep(1)
         
 
       '''
@@ -204,7 +204,7 @@ class Hue:
           # Todo - check the light id from settings
           self.ambilight_dim_light[index] = Light(bulb, self.settings)
           index = index + 1
-          xbmc.sleep(1)
+          #xbmc.sleep(1)
         
         '''
         self.ambilight_dim_light = [None] * self.settings.ambilight_dim_light
@@ -280,7 +280,7 @@ class Light:
     self.hueLast = color[0]
     self.satLast = color[1]
 
-    self.logger.debuglog("light %s start settings: %s" % (self.light, self.start_setting))
+    self.logger.debuglog("light %s start settings: %s" % (self.light.get_label(), self.start_setting))
 
   # def set_light(self, data):
   #   self.logger.debuglog("set_light: %s: %s" % (self.light, data))
@@ -291,7 +291,7 @@ class Light:
 
     if self.start_setting["on"] == False and self.force_light_on == False:
       # light was not on, and settings say we should not turn it on
-      self.logger.debuglog("light %s was off, settings say we should not turn it on" % self.light.get_label())
+      # self.logger.debuglog("light %s was off, settings say we should not turn it on" % self.light.get_label())
       return
 
     data = {}
@@ -573,7 +573,7 @@ class Group(Light):
     self.hueLast = color[0]
     self.satLast = color[1]
 
-    self.logger.debuglog("light %s start settings: %s" % (self.light, self.start_setting))
+    self.logger.debuglog("light %s start settings: %s" % (self.light.get_label(), self.start_setting))
 
   def request_url_put(self, url, data):
     try:
