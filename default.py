@@ -309,6 +309,7 @@ def run():
     if hue.settings.mode == 0: # ambilight mode
       now = time()
       #logger.debuglog("run loop delta: %f (%f/sec)" % ((now-last), 1/(now-last)))
+      #logger.debuglog("player.playingvideo: %s %s, useLegacyApi: %s" % (player.playingvideo, player.isPlayingVideo(), useLegacyApi))
       last = now
 
       startReadOut = False
@@ -321,12 +322,15 @@ def run():
       if player.playingvideo: # only if there's actually video
         try:
           if useLegacyApi:
-            capture.waitForCaptureStateChangeEvent(200)
+            #logger.debuglog("Waiting for capture state changed")
+            capture.waitForCaptureStateChangeEvent(1000) #milliseconds
             #we've got a capture event
+            #logger.debuglog("Capture State = %s" % (capture.getCaptureState()))
             if capture.getCaptureState() == xbmc.CAPTURE_STATE_DONE:
+              #logger.debuglog("Capture state = Done")
               startReadOut = True
           else:
-            vals = capture.getImage(200)
+            vals = capture.getImage(1000) #
             if len(vals) > 0 and player.playingvideo:
               startReadOut = True
           if startReadOut:
@@ -336,6 +340,7 @@ def run():
             else:
               screen = Screenshot(capture.getImage(), capture.getWidth(), capture.getHeight())
             hsvRatios = screen.spectrum_hsv(screen.pixels, screen.capture_width, screen.capture_height)
+            #logger.debuglog("hsvRatios: %s" %(hsvRatios))
             if hue.settings.light == 0:
               fade_light_hsv(hue.light, hsvRatios[0])
             else:
@@ -482,12 +487,16 @@ if ( __name__ == "__main__" ):
   if settings.debug == True:
     logger.debug()
 
+  logger.debuglog("useLegacyApi - %s" % str(useLegacyApi))
+    
   args = None
   if len(sys.argv) == 2:
     args = sys.argv[1]
   hue = Hue(settings, args)
   while not hue.connected and not monitor.abortRequested():
-    logger.debuglog("not connected")
     sleep(1)
+
+  logger.debuglog("Connected")
+    
   run()
 

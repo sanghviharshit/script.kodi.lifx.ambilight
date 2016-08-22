@@ -114,7 +114,7 @@ class ChapterManager:
 ####################
 
 class Logger:
-  scriptname = "Kodi Hue"
+  scriptname = "Kodi Lifx"
   enabled = True
   debug_enabled = False
 
