@@ -304,9 +304,10 @@ def run():
   #logger.debuglog("starting run loop!")
   while not monitor.abortRequested():
 
-    waitTimeout = 0.1;
+    waitTimeout = 1;
 
     if hue.settings.mode == 0: # ambilight mode
+      waitTimeout = 0.1;
       now = time()
       #logger.debuglog("run loop delta: %f (%f/sec)" % ((now-last), 1/(now-last)))
       #logger.debuglog("player.playingvideo: %s %s, useLegacyApi: %s" % (player.playingvideo, player.isPlayingVideo(), useLegacyApi))
@@ -314,24 +315,26 @@ def run():
 
       startReadOut = False
       vals = {}
+
+      #commenting the following lines because it breaks pause detection
       ## live tv does not trigger playbackstart
-      if player.isPlayingVideo() and not player.playingvideo:
-        player.playingvideo = True
-        state_changed("started", player.getTotalTime())
-        continue
+      #if player.isPlayingVideo() and not player.playingvideo:
+      #  player.playingvideo = True
+      #  state_changed("started", player.getTotalTime())
+      #  continue
       if player.playingvideo: # only if there's actually video
         try:
           if useLegacyApi:
             #logger.debuglog("Waiting for capture state changed")
-            capture.waitForCaptureStateChangeEvent(1000) #milliseconds
+            capture.waitForCaptureStateChangeEvent(int(1000/60)) #milliseconds
             #we've got a capture event
             #logger.debuglog("Capture State = %s" % (capture.getCaptureState()))
             if capture.getCaptureState() == xbmc.CAPTURE_STATE_DONE:
               #logger.debuglog("Capture state = Done")
               startReadOut = True
           else:
-            vals = capture.getImage(1000) #
-            if len(vals) > 0 and player.playingvideo:
+            vals = capture.getImage(int(1000/60)) #
+            if len(vals) > 0:
               startReadOut = True
           if startReadOut:
             if useLegacyApi:
@@ -341,11 +344,11 @@ def run():
               screen = Screenshot(capture.getImage(), capture.getWidth(), capture.getHeight())
             hsvRatios = screen.spectrum_hsv(screen.pixels, screen.capture_width, screen.capture_height)
             #logger.debuglog("hsvRatios: %s" %(hsvRatios))
-            if hue.settings.light == 0:
-              fade_light_hsv(hue.light, hsvRatios[0])
+            if hue.settings.ambilight_dim_light == 0:
+              fade_light_hsv(hue.ambilight_dim_light, hsvRatios[0])
             else:
               loop_index = 0
-              for l in hue.light:
+              for l in hue.ambilight_dim_light:
                 fade_light_hsv(l, hsvRatios[loop_index % 3])
                 loop_index = loop_index + 1
         except ZeroDivisionError:
@@ -394,7 +397,7 @@ def check_time(cur_time):
       if hue.settings.mode == 0 and hue.settings.ambilight_dim:
         if hue.settings.ambilight_dim_light == 0:
           hue.ambilight_dim_light.brighter_light()
-      elif hue.settings.ambilight_dim_light > 0:
+      elif hue.settings.mode == 0 and hue.settings.ambilight_dim_light > 0:
         for l in hue.ambilight_dim_light:
           l.brighter_light()
       else:
@@ -418,14 +421,7 @@ def state_changed(state, duration):
       hue.light.get_current_setting()
     else:
       for l in hue.light:
-        l.get_current_setting() #loop through without sleep.
-      # hue.light[0].get_current_setting()
-      # if hue.settings.light > 1:
-      #   xbmc.sleep(1)
-      #   hue.light[1].get_current_setting()
-      # if hue.settings.light > 2:
-      #   xbmc.sleep(1)
-      #   hue.light[2].get_current_setting()
+        l.get_current_setting()
 
     if hue.settings.mode == 0: # ambilight mode
       if hue.settings.ambilight_dim:

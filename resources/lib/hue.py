@@ -11,6 +11,7 @@ try:
 except ImportError:
   notify("Kodi Lifx", "ERROR: Could not import Python requests")
 
+lifx = None
 
 class Hue:
   params = None
@@ -19,7 +20,6 @@ class Hue:
   light = None
   ambilight_dim_light = None
   pauseafterrefreshchange = 0
-  lifx = None
   original_powers = None
   original_colors = None
 
@@ -29,7 +29,9 @@ class Hue:
     if settings.debug:
       self.logger.debug()
 
-    self.lifx = LifxLAN()
+    global lifx
+    lifx = LifxLAN()
+
     #get settings
     self.settings = settings
     self._parse_argv(args)
@@ -61,10 +63,10 @@ class Hue:
       self.logger.debuglog("unimplemented action call: %s" % self.params['action'])
 
     #detect pause for refresh change (must reboot for this to take effect.)
-    response = json.loads(xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Settings.GetSettingValue", "params":{"setting":"videoplayer.pauseafterrefreshchange"},"id":1}'))
+    #response = json.loads(xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Settings.GetSettingValue", "params":{"setting":"videoplayer.pauseafterrefreshchange"},"id":1}'))
     #logger.debuglog(isinstance(response, dict))
-    if "result" in response and "value" in response["result"]:
-      pauseafterrefreshchange = int(response["result"]["value"])
+    #if "result" in response and "value" in response["result"]:
+      #pauseafterrefreshchange = int(response["result"]["value"])
 
     if self.connected:
       if self.settings.misc_initialflash:
@@ -88,8 +90,8 @@ class Hue:
   def test_connection(self):
     self.logger.debuglog("testing connection")
     print("Discovering lights...")
-    self.original_powers = self.lifx.get_power_all_lights()
-    self.original_colors = self.lifx.get_color_all_lights()
+    self.original_powers = lifx.get_power_all_lights()
+    self.original_colors = lifx.get_color_all_lights()
     notify("Kodi Lifx", "Connected")
     self.connected = True
     return self.connected
@@ -161,7 +163,7 @@ class Hue:
       self.logger.debuglog("creating Light instances")      
       #hps
       #
-      bulbs = self.lifx.get_lights()
+      bulbs = lifx.get_lights()
       #print(bulbs)
       self.light = [None] * len(bulbs)
       self.logger.debuglog("Number of bulbs " + str(len(self.light)))
@@ -195,8 +197,8 @@ class Hue:
       elif self.settings.ambilight_dim_light > 0:
         self.logger.debuglog("creating Light instances for ambilight dim")
 
-        bulbs = self.lifx.get_lights()
-        self.logger.debuglog("Number of bulbs " + str(self.lifx.num_lights))
+        bulbs = lifx.get_lights()
+        self.logger.debuglog("Number of bulbs " + str(lifx.num_lights))
 
         self.ambilight_dim_light = [None] * len(bulbs)
         index = 0
@@ -315,7 +317,7 @@ class Light:
         data["sat"] = self.start_setting["sat"]
         self.satLast = self.start_setting["sat"]
 
-    self.logger.debuglog("light %s: onLast: %s, briLast: %s" % (self.light.get_label(), self.onLast, self.briLast))
+    #self.logger.debuglog("light %s: onLast: %s, briLast: %s" % (self.light.get_label(), self.onLast, self.briLast))
 
     '''
     if bri > 0:
@@ -337,7 +339,7 @@ class Light:
     time = 0
     if duration is None:
       if self.proportional_dim_time and self.mode != 0: #only if its not ambilight mode too
-        self.logger.debuglog("last %r, next %r, start %r, finish %r" % (self.briLast, bri, self.start_setting['bri'], self.dimmed_bri))
+        #self.logger.debuglog("last %r, next %r, start %r, finish %r" % (self.briLast, bri, self.start_setting['bri'], self.dimmed_bri))
         difference = abs(float(bri) - self.briLast)
         total = float(self.start_setting['bri']) - self.dimmed_bri
         if total != 0:
@@ -449,12 +451,14 @@ class Group(Light):
     Light.__init__(self, settings.light1_id, settings)
 
     #hps
-    bulbs = self.lifx.get_lights()
-    for bulb in  bulbs:
-      if bulb.get_group_label() == self.group_id:
-        tmp = Light(bulb, settings)
+    bulbs = lifx.get_lights()
+    for light in  bulbs:
+      if self.group_id.lower() in light.get_group_label().lower():
+        tmp = Light(light, settings)
+        tmp.get_current_setting()
+        self.logger.debuglog("Adding %s to the group" % light.get_label())
         #if tmp.start_setting['on']: #TODO: Why only add these if they're on?
-        self.lights[light] = bulb
+        self.lights[light] = tmp
 
     '''
     for light in self.get_lights():
@@ -478,26 +482,34 @@ class Group(Light):
 
     if not self.livingwhite:
       if not hue is None:
-        if not hue == self.hueLast:
-          data["hue"] = hue
-          self.hueLast = hue
+        data["hue"] = hue
+        self.hueLast = hue
+      elif not self.hueLast is None:
+        data["hue"] = self.hueLast
+      else:
+        data["hue"] = self.start_setting["hue"]
+        self.hueLast = self.start_setting["hue"]
+
       if not sat is None:
-        if not sat == self.satLast:
-          data["sat"] = sat
-          self.satLast = sat
+        data["sat"] = sat
+        self.satLast = sat
+      elif not self.satLast is None:
+        data["sat"] = self.satLast
+      else:
+        data["sat"] = self.start_setting["sat"]
+        self.satLast = self.start_setting["sat"]
 
-    if bri > 0:
-      if self.onLast == False: #don't sent on unless we have to. (performance)
-        data["on"] = True
-        self.onLast = True
+    if not bri is None:
       data["bri"] = bri
+    elif not self.briLast is None:
+      data["bri"] = self.briLast
     else:
-      data["on"] = False
-      self.onLast = False
+      data["bri"] = self.start_setting["bri"]
 
+    time = 0
     if duration is None:
       if self.proportional_dim_time and self.mode != 0: #only if its not ambilight mode too
-        self.logger.debuglog("last %r, next %r, start %r, finish %r" % (self.briLast, bri, self.start_setting['bri'], self.dimmed_bri))
+        #self.logger.debuglog("last %r, next %r, start %r, finish %r" % (self.briLast, bri, self.start_setting['bri'], self.dimmed_bri))
         difference = abs(float(bri) - self.briLast)
         total = float(self.start_setting['bri']) - self.dimmed_bri
         proportion = difference / total
@@ -515,15 +527,16 @@ class Group(Light):
     self.logger.debuglog("set_light2: group_id %s: %s" % (self.group_id, dataString))
 
     for group_light in self.lights:
-      if data["on"]:
-        # Lifxlan duration is in miliseconds
-        self.lights[group_light].set_power("on", data["transitiontime"]*100, rapid=False)
-
-      # color is a list of HSBK values: [hue (0-65535), saturation (0-65535), brightness (0-65535), Kelvin (2500-9000)]
-      k = 5500
-      color = [int(data["hue"]), int(data["sat"]*65535/255), int(data["bri"]*65535/255), k]
+      if not (self.lights[group_light].start_setting["on"] == False and self.force_light_on == False):
       # Lifxlan duration is in miliseconds
-      self.lights[group_light].set_color(color, data["transitiontime"]*100, rapid=False)
+        #self.lights[group_light].set_power("on", data["transitiontime"]*100, rapid=False)
+
+        # color is a list of HSBK values: [hue (0-65535), saturation (0-65535), brightness (0-65535), Kelvin (2500-9000)]
+        k = 5500
+        color = [int(data["hue"]), int(data["sat"]*65535/255), int(data["bri"]*65535/255), k]
+        # Lifxlan duration is in miliseconds
+        #self.lights[group_light].set_color(color, data["transitiontime"]*100, rapid=False)
+        group_light.set_color(color, data["transitiontime"] * 100, rapid=False)
 
   # def dim_light(self):
   #   for light in self.lights:
@@ -543,8 +556,7 @@ class Group(Light):
 
     #HPS
     #self.logger.debuglog("current_setting: %r" % self.light)
-    power_on = True
-    self.start_setting['on'] = power_on
+    self.start_setting['on'] = False
 
     if self.force_light_group_start_override: #override default just in case there is one light on
       for l in self.lights:
@@ -554,29 +566,29 @@ class Group(Light):
           self.start_setting['on'] = True
           break
 
-    #HSBK
-    color = self.light.get_color()
-    self.start_setting['bri'] = int(color[2]*255/65535)
+    self.start_setting['bri'] = 0
+    self.start_setting['hue'] = 0
+    self.start_setting['sat'] = 0
 
     if self.force_light_group_start_override:
       for l in self.lights:
         if self.start_setting['bri'] < self.lights[l].start_setting['bri']:
           self.start_setting['bri'] = self.lights[l].start_setting['bri'] #take the brightest of the group.
+          self.start_setting['hue'] = self.lights[l].start_setting['hue']
+          self.start_setting['sat'] = self.lights[l].start_setting['sat']
 
     self.onLast = self.start_setting['on']
     self.briLast = self.start_setting['bri']
-    
+    self.hueLast = self.start_setting['hue']
+    self.satLast = self.start_setting['sat']
+
     #modelid = j['modelid']
     self.fullSpectrum = True
     self.livingwhite = False
 
-    self.start_setting['hue'] = int(color[0])
-    self.start_setting['sat'] = int(color[1]*255/65535)
-    self.hueLast = self.start_setting['hue']
-    self.satLast = self.start_setting['sat']
+    self.logger.debuglog("light %s start settings: %s" % (self.group_id, self.start_setting))
 
-    self.logger.debuglog("light %s start settings: %s" % (self.light.get_label(), self.start_setting))
-
+#todo - remove this fn and requests import
   def request_url_put(self, url, data):
     try:
       response = self.s.put(url, data=data)
