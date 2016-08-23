@@ -30,9 +30,20 @@ A [Kodi](https://kodi.tv/) add-on that controls [Lifx](http://www.lifx.com/) lig
     - Option to change `minimum` and `maximum` brightness
 
 ## Demo
-** Coming Soon **
+### Kodi + Lifx + Ambilight + Movie (LOTR) Test 
+[![Kodi + Lifx + Ambilight + Movie (LOTR) Test](http://img.youtube.com/vi/LZui0Ui4hTQ/0.jpg)]
+(http://www.youtube.com/watch?v=LZui0Ui4hTQ "Kodi + Lifx + Ambilight + Movie (LOTR) Test")
 
+### Kodi (XBMC) + Lifx + Ambilight + Video Test
+[![Kodi (XBMC) + Lifx + Ambilight + Video Test](http://img.youtube.com/vi/UbWo8LaXDlE/0.jpg)]
+(http://www.youtube.com/watch?v=UbWo8LaXDlE "Kodi (XBMC) + Lifx + Ambilight + Video Test")
 
+### Other Ambient Lighting Demo
+[![Kodi Philips hue Ambilight mode](http://img.youtube.com/vi/iQ6W_JA42KQ/default.jpg)](http://www.youtube.com/watch?v=iQ6W_JA42KQ "Kodi Philips hue Ambilight mode")
+[![Kodi und Hue](http://img.youtube.com/vi/sOO6BBXTcYM/default.jpg)](http://www.youtube.com/watch?v=sOO6BBXTcYM "Kodi und Hue")
+[![Philips Hue Kodi Ambilight Color Demo using two Hue Blooms - 4k](http://img.youtube.com/vi/5aU4EZEX0is/default.jpg)](http://www.youtube.com/watch?v=5aU4EZEX0is "Philips Hue Kodi Ambilight Color Demo using two Hue Blooms - 4k")
+[![Kodi + Philips hue](http://img.youtube.com/vi/i3bzet-EbWc/default.jpg)](http://www.youtube.com/watch?v=i3bzet-EbWc "Kodi + Philips hue")
+[![Kodi with Hue ambilight](http://img.youtube.com/vi/_t4RpS4Dwag/default.jpg)](http://www.youtube.com/watch?v=_t4RpS4Dwag "Kodi + Philips hue")
 
 ## Installation
 
