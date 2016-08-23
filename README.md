@@ -65,10 +65,10 @@ Ambilight mode doesn't work on a Raspberry Pi due to the way it renders video
   - Try disabling Mediacodec (Surface) in Settings > Video> Acceleration. This seems to fix the problem. [Reference](https://github.com/michaelrcarroll/script.kodi.hue.ambilight/issues/30)
 
 **Other issues:**
-  - Please github issue tracker for reporting new issues.
+  - Please use github issue tracker for reporting new issues.
 
 ## Credits
 
 - [@mclarkk](https://github.com/mclarkk) for creating [lifxlan](https://github.com/mclarkk/lifxlan/) - a Python library for accessing LIFX devices locally using the official LIFX LAN protocol.
-- [@mpolednik](https://github.com/mpolednik), [@michaelrcarroll](https://github.com/michaelrcarroll) and others for maintaining [script.xbmc.hue.ambilight](https://github.com/mpolednik/script.xbmc.hue.ambilight), originally started by [@cees-elzinga](https://github.com/mclarkk/cees-elzinga)
+- [@mpolednik](https://github.com/mpolednik), [@michaelrcarroll](https://github.com/michaelrcarroll) and others for maintaining [script.kodi.hue.ambilight](https://github.com/mpolednik/script.kodi.hue.ambilight), originally started by [@cees-elzinga](https://github.com/mclarkk/cees-elzinga)
   
