@@ -1,16 +1,25 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.kodi.lifx.ambilight" name="Kodi Lifx Ambilight" version="0.0.1" provider-name="Harshit Sanghvi">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.requests"/>
-  </requires>
-  <extension point="xbmc.service" library="default.py"></extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Kodi-controlled Lifx lights</summary>
-    <description>Let Kodi control your Lifx lights. Either turns the lights into a room-sized ambilight, or automatically dims and un-dims them when playback starts.</description>
-    <license>GNU General Public License, v2</license>
-    <platform>all</platform>
-    <source>https://github.com/sanghviharshit/script.kodi.hue.ambilight/</source>
-	<email>hello@sanghviharshit.com</email>
-  </extension>
+    <addon id="script.kodi.lifx.ambilight" version="0.0.1"
+      name="Kodi Lifx Ambilight" provider-name="Harshit Sanghvi">
+    <requires>
+        <import addon="xbmc.python" version="2.1.0"/>
+        <import addon="script.module.requests"/>
+    </requires>
+    <extension point="xbmc.service" library="default.py"></extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>Kodi-controlled Lifx lights</summary>
+        <description>Let Kodi control your Lifx lights. Either turns the lights into a room-sized ambilight, or automatically dims and un-dims them when playback starts.</description>
+        <disclaimer>By using this, you take reponsibility for anything that happens.</disclaimer>
+        <language>en</language>
+        <platform>all</platform>
+        <forum>https://github.com/sanghviharshit/script.kodi.lifx.ambilight/issues</forum>
+        <website>https://github.com/sanghviharshit/script.kodi.lifx.ambilight/</website>
+        <source></source>
+        <email>hello@sanghviharshit.com</email>
+    </extension>
+    <extension point="xbmc.addon.repository" name="Demonstration Add-on Repository">
+        <info compressed="false">http://raw.github.com/sanghviharshit/repository.kodi.hps/master/addons.xml</info>
+        <checksum>http://raw.github.com/sanghviharshit/repository.kodi.hps/master/addons.xml.md5</checksum>
+        <datadir zip="true">http://raw.github.com/sanghviharshit/repository.kodi.hps/master/repo/</datadir>
+    </extension>
 </addon>
