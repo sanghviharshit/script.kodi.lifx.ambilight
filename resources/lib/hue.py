@@ -448,7 +448,7 @@ class Group(Light):
     if settings.debug:
       self.logger.debug()
 
-    Light.__init__(self, settings.light1_id, settings)
+    #Light.__init__(self, settings.light1_id, settings)
 
     #hps
     bulbs = lifx.get_lights()

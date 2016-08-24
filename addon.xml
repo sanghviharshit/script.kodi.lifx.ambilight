@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-    <addon id="script.kodi.lifx.ambilight" version="0.0.1"
+    <addon id="script.kodi.lifx.ambilight" version="0.0.2"
       name="Kodi Lifx Ambilight" provider-name="Harshit Sanghvi">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
