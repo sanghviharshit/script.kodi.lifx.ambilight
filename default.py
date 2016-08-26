@@ -367,7 +367,7 @@ def fade_light_hsv(light, hsvRatio):
     duration = int(3 + 27 * distance/255) #old algorithm
     #duration = int(10 - 2.5 * distance/255) #todo - check if this is better ?
     # logger.debuglog("distance %s duration %s" % (distance, duration))
-    light.set_light2(h, s, v, duration)
+    light.set_light2(h, s, v, None, duration)
 
 credits_time = None #test = 10
 credits_triggered = False

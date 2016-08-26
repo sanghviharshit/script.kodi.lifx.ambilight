@@ -141,13 +141,11 @@ class Hue:
     self.logger.debuglog(self.settings)
     if self.settings.light == 0:
       self.logger.debuglog("creating Group instance")
-      self.light = Group(self.settings)
+      self.light = Group(self.settings, self.settings.group_id)
+      self.logger.debuglog("Added %s bulbs to the Group %s" %(str(len(self.light.lights)), self.settings.group_id))
     elif self.settings.light > 0:
       self.logger.debuglog("creating Light instances")      
-      #hps
-      #
       bulbs = lifx.get_lights()
-
       self.light = [None] * len(bulbs)
       self.logger.debuglog("Number of bulbs " + str(len(self.light)))
       index = 0
@@ -163,11 +161,12 @@ class Hue:
       if self.settings.ambilight_dim_light == 0:
         self.logger.debuglog("creating Group instance for ambilight dim")
         self.ambilight_dim_light = Group(self.settings, self.settings.ambilight_dim_group_id)
+        self.logger.debuglog("Added %s bulbs to the Group %s" % (str(len(self.ambilight_dim_light.lights)), self.settings.ambilight_dim_group_id))
       elif self.settings.ambilight_dim_light > 0:
         self.logger.debuglog("creating Light instances for ambilight dim")
-
         bulbs = lifx.get_lights()
         self.ambilight_dim_light = [None] * len(bulbs)
+        self.logger.debuglog("Number of bulbs " + str(len(self.light)))
         index = 0
         for bulb in bulbs:
           # Todo - check the light id from settings
@@ -238,7 +237,7 @@ class Light:
 
     self.logger.debuglog("light %s start settings: %s" % (self.light.get_label(), self.start_setting))
 
-  def set_light2(self, hue, sat, bri, kel=3500, duration=None):
+  def set_light2(self, hue, sat, bri, kel, duration=None):
 
     if self.start_setting["on"] == False and self.force_light_on == False:
       # light was not on, and settings say we should not turn it on
@@ -347,7 +346,7 @@ class Light:
     else:
       sat = None
 
-    self.set_light2(hue, sat, self.dimmed_bri)
+    self.set_light2(hue, sat, self.dimmed_bri, None)
 
   def brighter_light(self):
     if self.override_undim_bri:
@@ -368,7 +367,7 @@ class Light:
       sat = None
       hue = None
 
-    self.set_light2(hue, sat, bri)
+    self.set_light2(hue, sat, bri, None)
 
   def partial_light(self):
     if self.override_paused:
@@ -388,16 +387,17 @@ class Light:
         sat = None
         hue = None
 
-      self.set_light2(hue, sat, bri)
+      self.set_light2(hue, sat, bri, None)
     else:
       #not enabled for dimming on pause
       self.brighter_light()
 
 class Group(Light):
   group = True
-  lights = {}
 
   def __init__(self, settings, group_id=None):
+    self.lights = {}
+
     if group_id==None:
       self.group_id = settings.group_id
     else:
@@ -428,29 +428,18 @@ class Group(Light):
 
     #hps
     bulbs = lifx.get_lights()
-    for light in  bulbs:
+    for light in bulbs:
       if self.group_id.lower() in light.get_group_label().lower():
         tmp = Light(light, settings)
         tmp.get_current_setting()
-        self.logger.debuglog("Adding %s to the group" % light.get_label())
+        self.logger.debuglog("Adding %s to the group - %s" % (light.get_label(), self.group_id))
         #if tmp.start_setting['on']: #TODO: Why only add these if they're not on?
         self.lights[light] = tmp
-
-    '''
-    for light in self.get_lights():
-      tmp = Light(light, settings)
-      tmp.get_current_setting()
-      #if tmp.start_setting['on']: #TODO: Why only add these if they're on?
-      self.lights[light] = tmp
-    '''
 
   def __len__(self):
     return 0
 
-  def set_light2(self, hue, sat, bri, kel=None, duration=None):
-
-    self.logger.debuglog("Group: %s: param kel - %s" % (self.group_id, kel))
-
+  def set_light2(self, hue, sat, bri, kel, duration=None):
     if self.start_setting["on"] == False and self.force_light_on == False:
       # light was not on, and settings say we should not turn it on
       self.logger.debuglog("group %s was off, settings say we should not turn it on" % self.group_id)
@@ -498,13 +487,13 @@ class Group(Light):
 
     if not kel is None:
       data["kel"] = kel
-      self.logger.debuglog("Group: %s: kel - %s" % (self.group_id, data["kel"]))
+      #self.logger.debuglog("Group: %s: kel - %s" % (self.group_id, data["kel"]))
     elif not self.kelLast is None:
       data["kel"] = self.kelLast
-      self.logger.debuglog("Group: %s: kel=kelLast - %s" % (self.group_id, data["kel"]))
+      #self.logger.debuglog("Group: %s: kel=kelLast - %s" % (self.group_id, data["kel"]))
     else:
       data["kel"] = self.start_setting["kel"]
-      self.logger.debuglog("Group: %s: kel=start_setting[kelLast] - %s" % (self.group_id, data["kel"]))
+      #self.logger.debuglog("Group: %s: kel=start_setting[kelLast] - %s" % (self.group_id, data["kel"]))
       self.kelLast = data["kel"]
 
     time = 0
@@ -529,20 +518,19 @@ class Group(Light):
     dataString = json.dumps(data)
 
     self.logger.debuglog("set_light2: %s: %s" % (self.group_id, dataString))
+    self.logger.debuglog("Group: %s: number of bulbs - %s" % (self.group_id, len(self.lights)))
 
     for group_light in self.lights:
-      if not (self.lights[group_light].start_setting["on"] == False and self.force_light_on == False):
       # Lifxlan duration is in miliseconds
-        #self.lights[group_light].set_power("on", data["transitiontime"]*100, rapid=False)
+      #self.lights[group_light].set_power("on", data["transitiontime"]*100, rapid=False)
+      if data["on"]:
+        group_light.set_power(True, rapid=False)
 
-        if data["on"]:
-          group_light.set_power(True, rapid=False)
-
-        # color is a list of HSBK values: [hue (0-65535), saturation (0-65535), brightness (0-65535), Kelvin (2500-9000)]
-        color = [int(data["hue"]), int(data["sat"]*65535/255), int(data["bri"]*65535/255), int(data["kel"])]
-        # Lifxlan duration is in miliseconds
-        #self.lights[group_light].set_color(color, data["transitiontime"]*100, rapid=False)
-        group_light.set_color(color, data["transitiontime"] * 100, rapid=False)
+      # color is a list of HSBK values: [hue (0-65535), saturation (0-65535), brightness (0-65535), Kelvin (2500-9000)]
+      color = [int(data["hue"]), int(data["sat"]*65535/255), int(data["bri"]*65535/255), int(data["kel"])]
+      # Lifxlan duration is in miliseconds
+      #self.lights[group_light].set_color(color, data["transitiontime"]*100, rapid=False)
+      group_light.set_color(color, data["transitiontime"] * 100, rapid=False)
 
   def dim_light(self):
     for light in self.lights:
