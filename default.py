@@ -23,12 +23,6 @@ from hue import *
 
 useLegacyApi = True
 
-try:
-  import requests
-except ImportError:
-  xbmc.log("ERROR: Could not locate required library requests")
-  notify("Kodi Lifx", "ERROR: Could not import Python requests")
-
 xbmc.log("Kodi Lifx service started, version: %s" % __addonversion__)
 
 capture = xbmc.RenderCapture()
@@ -344,12 +338,12 @@ def run():
               screen = Screenshot(capture.getImage(), capture.getWidth(), capture.getHeight())
             hsvRatios = screen.spectrum_hsv(screen.pixels, screen.capture_width, screen.capture_height)
             #logger.debuglog("hsvRatios: %s" %(hsvRatios))
-            if hue.settings.ambilight_dim_light == 0:
-              fade_light_hsv(hue.ambilight_dim_light, hsvRatios[0])
+            if hue.settings.light == 0:
+              fade_light_hsv(hue.light, hsvRatios[0])
             else:
               loop_index = 0
-              for l in hue.ambilight_dim_light:
-                fade_light_hsv(l, hsvRatios[loop_index % 3])
+              for l in hue.light:
+                fade_light_hsv(l, hsvRatios[loop_index % len(hsvRatios)])
                 loop_index = loop_index + 1
         except ZeroDivisionError:
           logger.debuglog("no frame. looping.")
@@ -441,7 +435,7 @@ def state_changed(state, duration):
       else:
         capture.capture(int(capture_width), int(capture_height))
 
-  if (state == "started" and hue.pauseafterrefreshchange == 0) or state == "resumed":
+  if state == "started" or state == "resumed":
     if hue.settings.mode == 0 and hue.settings.ambilight_dim: #if in ambilight mode and dimming is enabled
       logger.debuglog("dimming for ambilight")
       if hue.settings.ambilight_dim_light == 0:

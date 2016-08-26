@@ -14,9 +14,6 @@ class MySettings():
 
     self.mode                  = int(__addon__.getSetting("mode"))
     self.light                 = int(__addon__.getSetting("light"))
-    #self.light1_id             = int(__addon__.getSetting("light1_id"))
-    #self.light2_id             = int(__addon__.getSetting("light2_id"))
-    #self.light3_id             = int(__addon__.getSetting("light3_id"))
     self.group_id              = __addon__.getSetting("group_id")
     self.misc_initialflash     = __addon__.getSetting("misc_initialflash") == "true"
     self.misc_disableshort     = __addon__.getSetting("misc_disableshort") == "true"
@@ -39,9 +36,6 @@ class MySettings():
     self.credits_delay_time    = int(__addon__.getSetting("credits_delay_time").split(".")[0])
     self.ambilight_dim         = __addon__.getSetting("ambilight_dim") == "true"
     self.ambilight_dim_light   = int(__addon__.getSetting("ambilight_dim_light"))
-    #self.ambilight_dim_light1_id = int(__addon__.getSetting("ambilight_dim_light1_id"))
-    #self.ambilight_dim_light2_id = int(__addon__.getSetting("ambilight_dim_light2_id"))
-    #self.ambilight_dim_light3_id = int(__addon__.getSetting("ambilight_dim_light3_id"))
     self.ambilight_dim_group_id = __addon__.getSetting("ambilight_dim_group_id")
     self.ambilight_min         = int(int(__addon__.getSetting("ambilight_min").split(".")[0])*254/100)
     self.ambilight_max         = int(int(__addon__.getSetting("ambilight_max").split(".")[0])*254/100)
