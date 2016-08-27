@@ -72,3 +72,4 @@ Ambilight mode doesn't work on a Raspberry Pi due to the way it renders video
 - [@mclarkk](https://github.com/mclarkk) for creating [lifxlan](https://github.com/mclarkk/lifxlan/) - a Python library for accessing LIFX devices locally using the official LIFX LAN protocol.
 - [@mpolednik](https://github.com/mpolednik), [@michaelrcarroll](https://github.com/michaelrcarroll) and others for maintaining [script.kodi.hue.ambilight](https://github.com/mpolednik/script.kodi.hue.ambilight), originally started by [@cees-elzinga](https://github.com/mclarkk/cees-elzinga)
   
+[![Analytics](https://ga-beacon.appspot.com/UA-59542024-4/script.kodi.lifx.ambilight/)](https://github.com/igrigorik/ga-beacon)
