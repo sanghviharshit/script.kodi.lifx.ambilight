@@ -1,2 +1,12 @@
-0.0.1 Initial Release
-0.0.2 Bug fix (settings)
+0.1.0 (2016-08-26)
+- feature packed major release
+- feature - now it's possible to have ambilight on for a group and just dim another group of bulbs or all bulbs.
+- feature - same or different color for all lights
+- feature - override kelvin when dimmed (started/resumed) and undimmed(paused/stopped)
+- fix - better state checking, so restores lights state when video stops
+
+0.0.2 (2016-08-24)
+- Bug fix (settings)
+
+0.0.1 (2016-08-22)
+- Initial Release

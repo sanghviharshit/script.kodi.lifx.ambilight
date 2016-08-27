@@ -31,9 +31,9 @@
         <setting type="lsep" label="2000" />
         <!--Dimming-->
         <setting type="lsep" label="2100" />
-        <setting id="dim_time" label="2101" type="slider" default="4" range="0,0.5,10" option="float" />
         <setting id="proportional_dim_time" label="2102" type="bool" default="true" />
-        <setting id="propritional_explainer" type="lsep" label="2103" visible="eq(-1,true)" subsetting="true" />
+        <setting id="propritional_explainer" type="lsep" label="2103" subsetting="true" />
+        <setting id="dim_time" label="2101" type="slider" visible="eq(-2,false)" enable="eq(-2,false)" default="4" range="0,0.5,10" option="float" />
         <setting id="dimmed_bri" label="2104" type="slider" default="0" range="0,5,100" option="int" />
         <setting id="override_undim_bri" type="bool" label="2105" default="false" />
         <setting id="undim_bri" label="2106" type="slider" visible="eq(-1,true)" default="100" range="0,5,100" option="int" />

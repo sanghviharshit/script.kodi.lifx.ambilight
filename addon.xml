@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-    <addon id="script.kodi.lifx.ambilight" version="0.0.2"
+    <addon id="script.kodi.lifx.ambilight" version="0.1.0"
       name="Kodi Lifx Ambilight" provider-name="Harshit Sanghvi">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
@@ -15,6 +15,14 @@
         <website>https://github.com/sanghviharshit/script.kodi.lifx.ambilight/</website>
         <source></source>
         <email>hello@sanghviharshit.com</email>
+        <news>
+            0.1.0 (2016-08-26)
+            - feature packed major release
+            - feature - now it's possible to have ambilight on for a group and just dim another group of bulbs or all bulbs.
+            - feature - same or different color for all lights
+            - feature - override kelvin when dimmed (started/resumed) and undimmed(paused/stopped)
+            - fix - better state checking, so restores lights state when video stops
+        </news>
     </extension>
     <extension point="xbmc.addon.repository" name="Demonstration Add-on Repository">
         <info compressed="false">http://raw.github.com/sanghviharshit/repository.kodi.hps/master/addons.xml</info>
