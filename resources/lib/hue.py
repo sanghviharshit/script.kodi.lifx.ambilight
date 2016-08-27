@@ -176,15 +176,16 @@ class Hue:
 
 
 class Light:
-  start_setting = None
-  group = False
-  livingwhite = False
-  fullSpectrum = False
 
   def __init__(self, light_id, settings):
     self.logger = Logger()
     if settings.debug:
       self.logger.debug()
+
+    self.start_setting = None
+    self.group = False
+    self.livingwhite = False
+    self.fullSpectrum = False
 
     self.mode         = settings.mode
     self.light        = light_id  ## light_id is now bulb from get_lights()
@@ -201,6 +202,11 @@ class Light:
     self.undim_bri    = settings.undim_bri
     self.undim_hue    = settings.undim_hue
     self.override_undim_bri = settings.override_undim_bri
+
+    self.override_kel = settings.override_kel
+    self.dimmed_kel = settings.dimmed_kel
+    self.undim_kel = settings.undim_kel
+
     self.force_light_on = settings.force_light_on
     self.force_light_group_start_override = settings.force_light_group_start_override
 
@@ -267,16 +273,11 @@ class Light:
 
     self.logger.debuglog("light %s: onLast: %s, briLast: %s" % (self.light.get_label(), self.onLast, self.briLast))
 
-    if bri > 0:
-      if self.onLast == False: #don't send on unless we have to (performance)
-        data["on"] = True
-        self.onLast = True
-      else:
-        data["on"] = False
-        self.onLast = False
+    if self.onLast == False:  # don't send on unless we have to (performance)
+      data["on"] = True
+      self.onLast = True
     else:
       data["on"] = False
-      self.onLast = False
 
     if not bri is None:
       data["bri"] = bri
@@ -288,6 +289,10 @@ class Light:
 
     if not kel is None:
       data["kel"] = kel
+    elif hue > 0 or sat > 0:
+      data["kel"] = 3500  # Set kelvin to neutral
+      # self.logger.debuglog("Light: %s: kel=neutral - 3500" % (self.light.get_label()))
+      self.kelLast = data["kel"]
     elif not self.kelLast is None:
       data["kel"] = self.kelLast
     else:
@@ -336,6 +341,11 @@ class Light:
     self.brighter_light()
 
   def dim_light(self):
+    if self.override_kel:
+      kel = self.dimmed_kel
+    else:
+      kel = None
+
     if self.override_hue:
       hue = self.dimmed_hue
     else:
@@ -346,7 +356,7 @@ class Light:
     else:
       sat = None
 
-    self.set_light2(hue, sat, self.dimmed_bri, None)
+    self.set_light2(hue, sat, self.dimmed_bri, kel, None)
 
   def brighter_light(self):
     if self.override_undim_bri:
@@ -355,6 +365,10 @@ class Light:
       bri = self.start_setting['bri']
 
     if not self.livingwhite:
+      if self.override_kel:
+        kel = self.undim_kel
+      else:
+        kel = self.start_setting['kel']
       if self.override_sat:
         sat = self.undim_sat
       else:
@@ -367,13 +381,18 @@ class Light:
       sat = None
       hue = None
 
-    self.set_light2(hue, sat, bri, None)
+    self.set_light2(hue, sat, bri, kel, None)
 
   def partial_light(self):
     if self.override_paused:
       bri = self.paused_bri
 
       if not self.livingwhite:
+        if self.override_kel:
+          kel = self.undim_kel
+        else:
+          kel = self.start_setting['kel']
+
         if self.override_sat:
           sat = self.undim_sat
         else:
@@ -387,7 +406,7 @@ class Light:
         sat = None
         hue = None
 
-      self.set_light2(hue, sat, bri, None)
+      self.set_light2(hue, sat, bri, kel, None)
     else:
       #not enabled for dimming on pause
       self.brighter_light()
@@ -420,6 +439,10 @@ class Group(Light):
     self.force_light_on = settings.force_light_on
     self.force_light_group_start_override = settings.force_light_group_start_override
 
+    self.override_kel = settings.override_kel
+    self.dimmed_kel = settings.dimmed_kel
+    self.undim_kel = settings.undim_kel
+
     self.logger = Logger()
     if settings.debug:
       self.logger.debug()
@@ -435,6 +458,8 @@ class Group(Light):
         self.logger.debuglog("Adding %s to the group - %s" % (light.get_label(), self.group_id))
         #if tmp.start_setting['on']: #TODO: Why only add these if they're not on?
         self.lights[light] = tmp
+
+    self.get_current_setting()
 
   def __len__(self):
     return 0
@@ -466,16 +491,11 @@ class Group(Light):
         data["sat"] = self.start_setting["sat"]
         self.satLast = self.start_setting["sat"]
 
-    if bri > 0:
-      if self.onLast == False:  # don't send on unless we have to (performance)
-        data["on"] = True
-        self.onLast = True
-      else:
-        data["on"] = False
-        self.onLast = False
+    if self.onLast == False:  # don't send on unless we have to (performance)
+      data["on"] = True
+      self.onLast = True
     else:
       data["on"] = False
-      self.onLast = False
 
     if not bri is None:
       data["bri"] = bri
@@ -488,6 +508,10 @@ class Group(Light):
     if not kel is None:
       data["kel"] = kel
       #self.logger.debuglog("Group: %s: kel - %s" % (self.group_id, data["kel"]))
+    elif hue > 0 or sat > 0:
+      data["kel"] = 3500  # Set kelvin to neutral
+      # self.logger.debuglog("Group: %s: kel=neutral - 3500" % (self.group_id))
+      self.kelLast = data["kel"]
     elif not self.kelLast is None:
       data["kel"] = self.kelLast
       #self.logger.debuglog("Group: %s: kel=kelLast - %s" % (self.group_id, data["kel"]))
@@ -495,6 +519,7 @@ class Group(Light):
       data["kel"] = self.start_setting["kel"]
       #self.logger.debuglog("Group: %s: kel=start_setting[kelLast] - %s" % (self.group_id, data["kel"]))
       self.kelLast = data["kel"]
+
 
     time = 0
     if duration is None:
@@ -518,7 +543,7 @@ class Group(Light):
     dataString = json.dumps(data)
 
     self.logger.debuglog("set_light2: %s: %s" % (self.group_id, dataString))
-    self.logger.debuglog("Group: %s: number of bulbs - %s" % (self.group_id, len(self.lights)))
+    #self.logger.debuglog("Group: %s: number of bulbs - %s" % (self.group_id, len(self.lights)))
 
     for group_light in self.lights:
       # Lifxlan duration is in miliseconds
@@ -563,6 +588,7 @@ class Group(Light):
     self.start_setting['bri'] = 0
     self.start_setting['hue'] = 0
     self.start_setting['sat'] = 0
+    self.start_setting['kel'] = 3500
 
     if self.force_light_group_start_override:
       for l in self.lights:
@@ -571,6 +597,7 @@ class Group(Light):
           self.start_setting['hue'] = self.lights[l].start_setting['hue']
           self.start_setting['sat'] = self.lights[l].start_setting['sat']
           self.start_setting['kel'] = self.lights[l].start_setting['kel']
+
     self.onLast = self.start_setting['on']
     self.hueLast = self.start_setting['hue']
     self.satLast = self.start_setting['sat']

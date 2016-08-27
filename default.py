@@ -339,12 +339,22 @@ def run():
             hsvRatios = screen.spectrum_hsv(screen.pixels, screen.capture_width, screen.capture_height)
             #logger.debuglog("hsvRatios: %s" %(hsvRatios))
             if hue.settings.light == 0:
-              fade_light_hsv(hue.light, hsvRatios[0])
+              if settings.color_variation == 0:
+                fade_light_hsv(hue.light, hsvRatios[0])
+              else:
+                loop_index = 0
+                for l in hue.light.lights:
+                  fade_light_hsv(hue.light.lights[l], hsvRatios[loop_index % len(hsvRatios)])
+                  loop_index = loop_index + 1
             else:
-              loop_index = 0
-              for l in hue.light:
-                fade_light_hsv(l, hsvRatios[loop_index % len(hsvRatios)])
-                loop_index = loop_index + 1
+              if settings.color_variation == 0:
+                for l in hue.light:
+                  fade_light_hsv(l, hsvRatios[0])
+              else:
+                loop_index = 0
+                for l in hue.light:
+                  fade_light_hsv(l, hsvRatios[loop_index % len(hsvRatios)])
+                  loop_index = loop_index + 1
         except ZeroDivisionError:
           logger.debuglog("no frame. looping.")
 
@@ -436,35 +446,43 @@ def state_changed(state, duration):
         capture.capture(int(capture_width), int(capture_height))
 
   if state == "started" or state == "resumed":
-    if hue.settings.mode == 0 and hue.settings.ambilight_dim: #if in ambilight mode and dimming is enabled
-      logger.debuglog("dimming for ambilight")
-      if hue.settings.ambilight_dim_light == 0:
-        hue.ambilight_dim_light.dim_light()
-      elif hue.settings.ambilight_dim_light > 0:
-        for l in hue.ambilight_dim_light:
-          l.dim_light()
+    if hue.settings.mode == 0: #if in ambilight mode
+      if hue.settings.ambilight_dim: #if dimming is enabled
+        logger.debuglog("dimming for ambilight")
+        if hue.settings.ambilight_dim_light == 0:
+          hue.ambilight_dim_light.dim_light()
+        elif hue.settings.ambilight_dim_light > 0:
+          for l in hue.ambilight_dim_light:
+            l.dim_light()
     else:
       logger.debuglog("dimming lights")
       hue.dim_lights()
+    hue.last_state = "dimmed"
   elif state == "paused" and hue.last_state == "dimmed":
     #only if its coming from being off
-    if hue.settings.mode == 0 and hue.settings.ambilight_dim:
-      if hue.settings.ambilight_dim_light == 0:
-        hue.ambilight_dim_light.partial_light()
-      elif hue.settings.ambilight_dim_light > 0:
-        for l in hue.ambilight_dim_light:
-          l.partial_light()
+    if hue.settings.mode == 0:  # if in ambilight mode
+      if hue.settings.ambilight_dim:  # if dimming is enabled
+        logger.debuglog("setting partial lights")
+        if hue.settings.ambilight_dim_light == 0:
+          hue.ambilight_dim_light.partial_light()
+        elif hue.settings.ambilight_dim_light > 0:
+          for l in hue.ambilight_dim_light:
+            l.partial_light()
     else:
+      logger.debuglog("setting partial lights")
       hue.partial_lights()
+    hue.last_state = "partial"
   elif state == "stopped":
-    if hue.settings.mode == 0 and hue.settings.ambilight_dim:
-      if hue.settings.ambilight_dim_light == 0:
-        hue.ambilight_dim_light.brighter_light()
-      elif hue.settings.ambilight_dim_light > 0:
-        for l in hue.ambilight_dim_light:
-          l.brighter_light()
+    if hue.settings.mode == 0:  # if in ambilight mode
+      if hue.settings.ambilight_dim:  # if dimming is enabled
+        if hue.settings.ambilight_dim_light == 0:
+          hue.ambilight_dim_light.brighter_light()
+        elif hue.settings.ambilight_dim_light > 0:
+          for l in hue.ambilight_dim_light:
+            l.brighter_light()
     else:
       hue.brighter_lights()
+    hue.last_state = "brighter"
 
 if ( __name__ == "__main__" ):
   try:

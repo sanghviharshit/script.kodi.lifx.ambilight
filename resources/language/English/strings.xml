@@ -50,6 +50,9 @@
   <string id="2204">Override saturation</string>
   <string id="2205">Dimmed saturation</string>
   <string id="2206">Undimmed saturation</string>
+  <string id="2207">Override kelvin</string>
+  <string id="2208">Dimmed kelvin</string>
+  <string id="2209">Undimmed kelvin</string>
 
   <string id="2300">Credits - EXPERIMENTAL</string>
   <string id="2301">Undim during credits</string>
@@ -60,7 +63,7 @@
   <!-- Ambilight -->
   <string id="3000">Ambilight</string>
   
-  <string id="3100">Dimming</string>
+  <string id="3100">Dimming (Theater Mode)</string>
   <string id="3101">Dim before playback</string>
   <string id="3102">Group of lights</string>
   <string id="3103">Single light</string>
@@ -83,6 +86,10 @@
   <string id="3300">Color</string>
   <string id="3301">Color Bias</string>
   <string id="3302">Sensitivity: 6=variety with >1 light, 36=accuracy</string>
+
+  <string id="3310">Color Variation</string>
+  <string id="3311">Same Color for All Lights</string>
+  <string id="3312">Different Colors for Different Lights</string>
 
   <string id="3250">Thresholds</string>
   <string id="3251">Value threshold</string>

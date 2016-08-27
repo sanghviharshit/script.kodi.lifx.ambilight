@@ -42,11 +42,14 @@
         <!--Color-->
         <setting type="lsep" label="2200" />
         <setting id="override_hue" type="bool" label="2201" default="false" />
-        <setting id="dimmed_hue" type="slider" label="2202" default="14910" visible="eq(-1,true)" range="0,1000,65534" option="int" />
-        <setting id="undim_hue" type="slider" label="2203" default="32767" visible="eq(-2,true)" range="0,1000,65534" option="int" />
+        <setting id="dimmed_hue" type="slider" label="2202" default="14910" visible="eq(-1,true)" range="0,1000,65535" option="int" />
+        <setting id="undim_hue" type="slider" label="2203" default="32767" visible="eq(-2,true)" range="0,1000,65535" option="int" />
         <setting id="override_sat" type="bool" label="2204" default="false" />
         <setting id="dimmed_sat" type="slider" label="2205" default="144" visible="eq(-1,true)" range="0,255" option="int" />
         <setting id="undim_sat" type="slider" label="2206" default="144" visible="eq(-2,true)" range="0,255" option="int" />
+        <setting id="override_kel" type="bool" label="2207" default="false" />
+        <setting id="dimmed_kel" type="enum" label="2208" default="3500" visible="eq(-1,true)" values="2500|2750|3000|3200|3500|4000|4500|5000|5500|6000|6500|7000|7500|8000|8500|9000" />
+        <setting id="undim_kel" type="enum" label="2209" default="3500" visible="eq(-2,true)" values="2500|2750|3000|3200|3500|4000|4500|5000|5500|6000|6500|7000|7500|8000|8500|9000" />
         <!--Credits-->
         <setting type="lsep" label="2300" />
         <setting id="undim_during_credits" type="bool" label="2301" default="false" />
@@ -82,8 +85,10 @@
         <setting id="ambilight_threshold_saturation" label="3252" type="slider" default="0.33" range="0,0.01,1" option="float" />
         <!--Color-->
         <setting type="lsep" label="3300" />
+        <setting id="color_variation" type="enum" enable="true" label="3310" default="1" lvalues="3311|3312" />
         <setting id="color_bias" label="3301" type="slider" default="18" range="6,3,36" option="int" />
         <setting label="3302" type="lsep" subsetting="true" /> <!--Color Bias Explainer-->
+
     </category>
 
     <category label="4000">
