@@ -1,4 +1,4 @@
-# script.kodi.lifx.ambilight
+# Lifx (Ambilight) Addon for Kodi
 
 A [Kodi](https://kodi.tv/) add-on that controls [Lifx](http://www.lifx.com/) lights. In `Theater mode` the add-on dims the Lifx lights as soon as a movie starts playing, and turns the lights back to original settings once the movie is done. `Ambilight mode` turns your Lifx lights in a room-sized **[ambilight](https://en.wikipedia.org/wiki/Ambilight).**
 
@@ -18,7 +18,7 @@ A [Kodi](https://kodi.tv/) add-on that controls [Lifx](http://www.lifx.com/) lig
   - `Experimental`: Option to undim lights when `credits` start rolling. (Uses ChapterDB.org)
     - Option to delay the credits start time.
     - *does not always work, may ruin your movie-watching experience*
-  
+  - `Restore` the lights to original states (color and power) when movie stops.
 - 2 Modes for your Lifx powered media center room
   - `Theatre Mode`
     - `Dim` or Turn off the lights when Movie starts `playing`
@@ -44,6 +44,19 @@ A [Kodi](https://kodi.tv/) add-on that controls [Lifx](http://www.lifx.com/) lig
 [![Philips Hue Kodi Ambilight Color Demo using two Hue Blooms - 4k](http://img.youtube.com/vi/5aU4EZEX0is/default.jpg)](http://www.youtube.com/watch?v=5aU4EZEX0is "Philips Hue Kodi Ambilight Color Demo using two Hue Blooms - 4k")
 [![Kodi + Philips hue](http://img.youtube.com/vi/i3bzet-EbWc/default.jpg)](http://www.youtube.com/watch?v=i3bzet-EbWc "Kodi + Philips hue")
 [![Kodi with Hue ambilight](http://img.youtube.com/vi/_t4RpS4Dwag/default.jpg)](http://www.youtube.com/watch?v=_t4RpS4Dwag "Kodi + Philips hue")
+
+## Screenshots
+#### Addon Information
+[![Addon Information](http://i.imgur.com/9eVRc8Nm.jpg)](http://i.imgur.com/9eVRc8N.jpg)
+
+#### Addon Settings
+[![Addon Settings - Main](http://i.imgur.com/3kpdmqVt.jpg)](http://i.imgur.com/3kpdmqV.jpg)
+[![Addon Settings - Theater - 1](http://i.imgur.com/BmbPCR3t.jpg)](http://i.imgur.com/BmbPCR3.jpg)
+[![Addon Settings - Theater - 2](http://i.imgur.com/K1Yr0nXt.jpg)](http://i.imgur.com/K1Yr0nX.jpg)
+[![Addon Settings - Ambilight - 1](http://i.imgur.com/cL2EGTYt.jpg)](http://i.imgur.com/cL2EGTY.jpg)
+[![Addon Settings - Ambilight - 2](http://i.imgur.com/S5yRWxlt.jpg)](http://i.imgur.com/S5yRWxl.jpg)
+[![Addon Settings - Advance](http://i.imgur.com/wcawBM0t.jpg)](http://i.imgur.com/wcawBM0.jpg)
+
 
 ## Installation
 
