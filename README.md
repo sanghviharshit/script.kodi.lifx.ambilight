@@ -45,7 +45,7 @@ A [Kodi](https://kodi.tv/) add-on that controls [Lifx](http://www.lifx.com/) lig
 [![Kodi + Philips hue](http://img.youtube.com/vi/i3bzet-EbWc/default.jpg)](http://www.youtube.com/watch?v=i3bzet-EbWc "Kodi + Philips hue")
 [![Kodi with Hue ambilight](http://img.youtube.com/vi/_t4RpS4Dwag/default.jpg)](http://www.youtube.com/watch?v=_t4RpS4Dwag "Kodi + Philips hue")
 
-## Screenshots
+## [Screenshots](http://imgur.com/gallery/V9Dxh)
 #### Addon Information
 [![Addon Information](http://i.imgur.com/9eVRc8Nm.jpg)](http://i.imgur.com/9eVRc8N.jpg)
 
