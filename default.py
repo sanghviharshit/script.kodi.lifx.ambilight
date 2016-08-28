@@ -377,7 +377,7 @@ def fade_light_hsv(light, hsvRatio):
     duration = int(3 + 27 * distance/255) #old algorithm
     #duration = int(10 - 2.5 * distance/255) #todo - check if this is better ?
     # logger.debuglog("distance %s duration %s" % (distance, duration))
-    light.set_light2(h, s, v, None, duration)
+    light.set_light2(h, s, v, kel=None, power=None, duration=duration)
 
 credits_time = None #test = 10
 credits_triggered = False
@@ -398,12 +398,13 @@ def check_time(cur_time):
     if (cur_time >= credits_time + hue.settings.credits_delay_time) and not credits_triggered:
       logger.debuglog("hit credits, turn on lights")
       # do partial undim (if enabled, otherwise full undim)
-      if hue.settings.mode == 0 and hue.settings.ambilight_dim:
-        if hue.settings.ambilight_dim_light == 0:
-          hue.ambilight_dim_light.brighter_light()
-      elif hue.settings.mode == 0 and hue.settings.ambilight_dim_light > 0:
-        for l in hue.ambilight_dim_light:
-          l.brighter_light()
+      if hue.settings.mode == 0:
+        if hue.settings.ambilight_dim:
+          if hue.settings.ambilight_dim_light == 0:
+            hue.ambilight_dim_light.brighter_light()
+          elif hue.settings.ambilight_dim_light > 0:
+            for l in hue.ambilight_dim_light:
+              l.brighter_light()
       else:
         hue.brighter_lights()
       credits_triggered = True
@@ -475,12 +476,14 @@ def state_changed(state, duration):
   elif state == "stopped":
     if hue.settings.mode == 0:  # if in ambilight mode
       if hue.settings.ambilight_dim:  # if dimming is enabled
+        logger.debuglog("restoring lights for ambilight")
         if hue.settings.ambilight_dim_light == 0:
           hue.ambilight_dim_light.brighter_light()
         elif hue.settings.ambilight_dim_light > 0:
           for l in hue.ambilight_dim_light:
             l.brighter_light()
     else:
+      logger.debuglog("restoring lights for theater")
       hue.brighter_lights()
     hue.last_state = "brighter"
 

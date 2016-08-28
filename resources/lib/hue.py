@@ -122,7 +122,7 @@ class Hue:
       self.light.brighter_light()
     elif self.settings.light > 0:
         for l in self.light:
-          l.dim_light()
+          #l.dim_light()  #why?
           #xbmc.sleep(1)
           l.brighter_light()
       
@@ -243,7 +243,7 @@ class Light:
 
     self.logger.debuglog("light %s start settings: %s" % (self.light.get_label(), self.start_setting))
 
-  def set_light2(self, hue, sat, bri, kel, duration=None):
+  def set_light2(self, hue, sat, bri, kel, power=None, duration=None):
 
     if self.start_setting["on"] == False and self.force_light_on == False:
       # light was not on, and settings say we should not turn it on
@@ -313,8 +313,8 @@ class Light:
     else:
       time = duration
 
-    self.briLast = data["bri"] # moved after time calclation to know the previous value (important)
-    self.kelLast = data["kel"] # moved after time calclation to know the previous value (important)
+    self.briLast = data["bri"] # moved after time calculation to know the previous value (important)
+    self.kelLast = data["kel"]
 
     data["transitiontime"] = time
     
@@ -325,6 +325,9 @@ class Light:
 
     if data["on"]:
       self.light.set_power(True, rapid=False)
+
+    if power==False:
+      self.light.set_power(False, rapid=False)
 
     # color is a list of HSBK values: [hue (0-65535), saturation (0-65535), brightness (0-65535), Kelvin (2500-9000)]
     color = [int(data["hue"]),int(data["sat"]*65535/255),int(data["bri"]*65535/255),int(data["kel"])]
@@ -356,13 +359,19 @@ class Light:
     else:
       sat = None
 
-    self.set_light2(hue, sat, self.dimmed_bri, kel, None)
+    self.set_light2(hue, sat, self.dimmed_bri, kel, power=None, duration=None)
 
   def brighter_light(self):
+
     if self.override_undim_bri:
       bri = self.undim_bri
     else:
       bri = self.start_setting['bri']
+
+    power = None
+    if self.force_light_on:
+      self.logger.debuglog("%s was off, so will be powered off" %(self.light.get_label()))
+      power = self.start_setting['on']
 
     if not self.livingwhite:
       if self.override_kel:
@@ -381,7 +390,7 @@ class Light:
       sat = None
       hue = None
 
-    self.set_light2(hue, sat, bri, kel, None)
+    self.set_light2(hue, sat, bri, kel, power, duration=None)
 
   def partial_light(self):
     if self.override_paused:
@@ -406,7 +415,7 @@ class Light:
         sat = None
         hue = None
 
-      self.set_light2(hue, sat, bri, kel, None)
+      self.set_light2(hue, sat, bri, kel, power=None, duration=None)
     else:
       #not enabled for dimming on pause
       self.brighter_light()
@@ -464,7 +473,7 @@ class Group(Light):
   def __len__(self):
     return 0
 
-  def set_light2(self, hue, sat, bri, kel, duration=None):
+  def set_light2(self, hue, sat, bri, kel, power=None, duration=None):
     if self.start_setting["on"] == False and self.force_light_on == False:
       # light was not on, and settings say we should not turn it on
       self.logger.debuglog("group %s was off, settings say we should not turn it on" % self.group_id)
