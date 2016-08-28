@@ -1,3 +1,6 @@
+0.1.1 (2016-08-28)
+- fix - restore power state to off when video stops
+
 0.1.0 (2016-08-26)
 - feature packed major release
 - feature - now it's possible to have ambilight on for a group and just dim another group of bulbs or all bulbs.
