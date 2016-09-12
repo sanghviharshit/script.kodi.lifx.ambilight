@@ -165,18 +165,18 @@ class HSVRatio:
   def hue(self, fullSpectrum):
     if fullSpectrum != True:
       if self.h > 0.065 and self.h < 0.19:
-          self.h = self.h * 2.32
+          #self.h = self.h * 2.32
       elif self.s > 0.01:
         if self.h < 0.5:
           #yellow-green correction
-          self.h = self.h * 1.17
+          #self.h = self.h * 1.17
           #cyan-green correction
           if self.h > self.cyan_min:
-            self.h = self.cyan_min
+            #self.h = self.cyan_min
         else:
           #cyan-blue correction
           if self.h < self.cyan_max:
-            self.h = self.cyan_max
+            #self.h = self.cyan_max
 
     h = int(self.h*65535) # on a scale from 0 <-> 65534
     s = int(self.s*255)
@@ -200,8 +200,6 @@ class Screenshot:
   def most_used_spectrum(self, spectrum, saturation, value, size, overall_value):
     # color bias/groups 6 - 36 in steps of 3
     colorGroups = settings.color_bias
-    if colorGroups == 0:
-      colorGroups = 1
     colorHueRatio = 360 / colorGroups
 
     hsvRatios = []
@@ -227,6 +225,10 @@ class Screenshot:
       hsvRatios = sorted(hsvRatios, key=lambda hsvratio: hsvratio.ratio, reverse=True)
       # logger.debuglog("hsvRatios %s" % hsvRatios)
 
+      for hsvRatio in hsvRatios:
+        hsvRatio.averageValue(overall_value)
+
+      '''  
       #return at least 3
       if colorCount == 2:
         hsvRatios.insert(0, hsvRatios[0])
@@ -234,14 +236,15 @@ class Screenshot:
       hsvRatios[0].averageValue(overall_value)
       hsvRatios[1].averageValue(overall_value)
       hsvRatios[2].averageValue(overall_value)
+      '''
       return hsvRatios
 
     elif colorCount == 1:
       hsvRatios[0].averageValue(overall_value)
-      return [hsvRatios[0]] * 3
+      return [hsvRatios[0]]
 
     else:
-      return [HSVRatio()] * 3
+      return [HSVRatio()]
 
   def spectrum_hsv(self, pixels, width, height):
     spectrum = {}
@@ -374,9 +377,11 @@ def fade_light_hsv(light, hsvRatio):
   vvec = v - light.briLast
   distance = math.sqrt(hvec**2 + svec**2 + vvec**2) #changed to squares for performance
   if distance > 0:
-    duration = int(3 + 27 * distance/255) #old algorithm
-    #duration = int(10 - 2.5 * distance/255) #todo - check if this is better ?
-    # logger.debuglog("distance %s duration %s" % (distance, duration))
+    if hue.settings.ambilight_old_algorithm:
+      duration = int(3 + 27 * distance/255)
+    else:
+      duration = int(10 - 2.5 * distance/255)
+    logger.debuglog("distance %s duration %s" % (distance, duration))
     light.set_light2(h, s, v, kel=None, power=None, duration=duration)
 
 credits_time = None #test = 10
@@ -493,13 +498,15 @@ if ( __name__ == "__main__" ):
   except AttributeError:
     useLegacyApi = False
   settings = MySettings()
+
   logger = Logger()
   monitor = MyMonitor()
   if settings.debug == True:
     logger.debug()
 
   logger.debuglog("useLegacyApi - %s" % str(useLegacyApi))
-    
+  logger.debuglog("Settings - %s" % str(settings))
+
   args = None
   if len(sys.argv) == 2:
     args = sys.argv[1]

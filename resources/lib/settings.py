@@ -9,8 +9,8 @@ class MySettings():
     self.addon = xbmcaddon.Addon()
 
   def readxml(self):
-    self.bridge_ip             = __addon__.getSetting("bridge_ip")
-    self.bridge_user           = __addon__.getSetting("bridge_user")
+    #self.bridge_ip             = __addon__.getSetting("bridge_ip")
+    #self.bridge_user           = __addon__.getSetting("bridge_user")
 
     self.mode                  = int(__addon__.getSetting("mode"))
     self.light                 = int(__addon__.getSetting("light"))
@@ -42,6 +42,7 @@ class MySettings():
     self.ambilight_dim         = __addon__.getSetting("ambilight_dim") == "true"
     self.ambilight_dim_light   = int(__addon__.getSetting("ambilight_dim_light"))
     self.ambilight_dim_group_id = __addon__.getSetting("ambilight_dim_group_id")
+    self.ambilight_old_algorithm = __addon__.getSetting("ambilight_old_algorithm") == "true"
     self.ambilight_min         = int(int(__addon__.getSetting("ambilight_min").split(".")[0])*254/100)
     self.ambilight_max         = int(int(__addon__.getSetting("ambilight_max").split(".")[0])*254/100)
     self.ambilight_threshold_value = int(int(__addon__.getSetting("ambilight_threshold_value").split(".")[0])*254/100)
@@ -79,13 +80,18 @@ class MySettings():
     'dimmed_sat: %s\n' % str(self.dimmed_sat) + \
     'override_sat: %s\n' % str(self.override_sat) + \
     'undim_sat: %s\n' % str(self.undim_sat) + \
+    'dimmed_kel: %s\n' % str(self.dimmed_kel) + \
+    'override_kel: %s\n' % str(self.override_kel) + \
+    'undim_kel: %s\n' % str(self.undim_kel) + \
     'ambilight_dim: %s\n' % str(self.ambilight_dim) + \
     'ambilight_dim_light: %s\n' % str(self.ambilight_dim_light) + \
-    'ambilight_dim_group_id: %s\n' % self.ambilight_dim_group_id + \
+    'ambilight_dim_group_id: %s\n' % str(self.ambilight_dim_group_id) + \
+    'ambilight_old_algorithm: %s\n' % str(self.ambilight_old_algorithm) + \
     'ambilight_min: %s\n' % str(self.ambilight_min) + \
     'ambilight_max: %s\n' % str(self.ambilight_max) + \
     'ambilight_threshold_value: %s\n' % str(self.ambilight_threshold_value) + \
     'ambilight_threshold_saturation: %s\n' % str(self.ambilight_threshold_saturation) + \
+    'color_variation: %s\n' % str(self.color_variation) + \
     'color_bias: %s\n' % str(self.color_bias) + \
     'force_light_on: %s\n' % str(self.force_light_on) + \
     'force_light_group_start_override: %s\n' % str(self.force_light_group_start_override) + \
