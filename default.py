@@ -163,20 +163,20 @@ class HSVRatio:
     
 
   def hue(self, fullSpectrum):
-    if fullSpectrum != True:
+    if fullSpectrum == True:
       if self.h > 0.065 and self.h < 0.19:
-          #self.h = self.h * 2.32
+          self.h = self.h * 2.32
       elif self.s > 0.01:
         if self.h < 0.5:
           #yellow-green correction
-          #self.h = self.h * 1.17
+          self.h = self.h * 1.17
           #cyan-green correction
           if self.h > self.cyan_min:
-            #self.h = self.cyan_min
+            self.h = self.cyan_min
         else:
           #cyan-blue correction
           if self.h < self.cyan_max:
-            #self.h = self.cyan_max
+            self.h = self.cyan_max
 
     h = int(self.h*65535) # on a scale from 0 <-> 65534
     s = int(self.s*255)
@@ -220,11 +220,12 @@ class Screenshot:
         hsvRatios.append(hsvr)
 
     colorCount = len(hsvRatios)
+    logger.debuglog("Count of colors - %s" % colorCount)
+
     if colorCount > 1:
       # sort colors by popularity
       hsvRatios = sorted(hsvRatios, key=lambda hsvratio: hsvratio.ratio, reverse=True)
-      # logger.debuglog("hsvRatios %s" % hsvRatios)
-
+      
       for hsvRatio in hsvRatios:
         hsvRatio.averageValue(overall_value)
 
@@ -301,15 +302,11 @@ def run():
   #logger.debuglog("starting run loop!")
   while not monitor.abortRequested():
 
-    waitTimeout = 1;
+    waitTimeout = 1; #seconds
 
     if hue.settings.mode == 0: # ambilight mode
-      waitTimeout = 0.1;
-      now = time()
-      #logger.debuglog("run loop delta: %f (%f/sec)" % ((now-last), 1/(now-last)))
-      #logger.debuglog("player.playingvideo: %s %s, useLegacyApi: %s" % (player.playingvideo, player.isPlayingVideo(), useLegacyApi))
-      last = now
-
+      waitTimeout = 0.05; #seconds
+      
       startReadOut = False
       vals = {}
 
@@ -320,17 +317,21 @@ def run():
       #  state_changed("started", player.getTotalTime())
       #  continue
       if player.playingvideo: # only if there's actually video
+        now = time()
+        logger.debuglog("run loop delta: %f (%f/sec)" % ((now-last), 1/(now-last)))
+        #logger.debuglog("player.playingvideo: %s %s, useLegacyApi: %s" % (player.playingvideo, player.isPlayingVideo(), useLegacyApi))
+        last = now
         try:
           if useLegacyApi:
             #logger.debuglog("Waiting for capture state changed")
-            capture.waitForCaptureStateChangeEvent(int(1000/60)) #milliseconds
+            capture.waitForCaptureStateChangeEvent(int(100)) #milliseconds
             #we've got a capture event
             #logger.debuglog("Capture State = %s" % (capture.getCaptureState()))
             if capture.getCaptureState() == xbmc.CAPTURE_STATE_DONE:
               #logger.debuglog("Capture state = Done")
               startReadOut = True
           else:
-            vals = capture.getImage(int(1000/60)) #
+            vals = capture.getImage(int(100)) #
             if len(vals) > 0:
               startReadOut = True
           if startReadOut:
@@ -340,7 +341,7 @@ def run():
             else:
               screen = Screenshot(capture.getImage(), capture.getWidth(), capture.getHeight())
             hsvRatios = screen.spectrum_hsv(screen.pixels, screen.capture_width, screen.capture_height)
-            #logger.debuglog("hsvRatios: %s" %(hsvRatios))
+            logger.debuglog("hsvRatios: %s" %(hsvRatios))
             if hue.settings.light == 0:
               if settings.color_variation == 0:
                 fade_light_hsv(hue.light, hsvRatios[0])
@@ -381,7 +382,7 @@ def fade_light_hsv(light, hsvRatio):
       duration = int(3 + 27 * distance/255)
     else:
       duration = int(10 - 2.5 * distance/255)
-    logger.debuglog("distance %s duration %s" % (distance, duration))
+    #logger.debuglog("distance %s duration %s" % (distance, duration))
     light.set_light2(h, s, v, kel=None, power=None, duration=duration)
 
 credits_time = None #test = 10
