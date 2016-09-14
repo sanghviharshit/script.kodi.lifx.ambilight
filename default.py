@@ -163,7 +163,7 @@ class HSVRatio:
     
 
   def hue(self, fullSpectrum):
-    if fullSpectrum == True:
+    if fullSpectrum != True:
       if self.h > 0.065 and self.h < 0.19:
           self.h = self.h * 2.32
       elif self.s > 0.01:
@@ -199,8 +199,8 @@ class Screenshot:
 
   def most_used_spectrum(self, spectrum, saturation, value, size, overall_value):
     # color bias/groups 6 - 36 in steps of 3
-    colorGroups = settings.color_bias
-    colorHueRatio = 360 / colorGroups
+    colorGroups = settings.color_bias #6 = more variety of colors, 36 = similar colors
+    colorHueRatio = 360 / colorGroups #colorHueRatio will be between 60 and 10. 60=close to primary colors, 10 = more to original colors
 
     hsvRatios = []
     hsvRatiosDict = {}
@@ -208,6 +208,16 @@ class Screenshot:
     for i in spectrum:
       #shift index to the right so that groups are centered on primary and secondary colors
       colorIndex = int(((i+colorHueRatio/2) % 360)/colorHueRatio)
+      #some info? - https://docs.gimp.org/en/gimp-tool-hue-saturation.html
+      #i=0, ratio=60 => colorIndex = 0            
+      #i=60, ratio=60 => colorIndex = int(1.5)
+      #i=90, ratio=60 => colorIndex = int(2)
+      #i=120, ratio=60 => colorIndex = int(2.5)
+      #i=180, ratio=60 => colorIndex = int(3.5)
+      #i=270, ratio=60 => colorIndex = int(4.5)
+      #i=330, ratio=60 => colorIndex = int(5.5)
+      #i=360, ratio=60 => colorIndex = int(0.5)
+
       pixelCount = spectrum[i]
 
       try:
@@ -318,13 +328,13 @@ def run():
       #  continue
       if player.playingvideo: # only if there's actually video
         now = time()
-        logger.debuglog("run loop delta: %f (%f/sec)" % ((now-last), 1/(now-last)))
+        #logger.debuglog("run loop delta: %f (%f/sec)" % ((now-last), 1/(now-last)))
         #logger.debuglog("player.playingvideo: %s %s, useLegacyApi: %s" % (player.playingvideo, player.isPlayingVideo(), useLegacyApi))
         last = now
         try:
           if useLegacyApi:
             #logger.debuglog("Waiting for capture state changed")
-            capture.waitForCaptureStateChangeEvent(int(100)) #milliseconds
+            capture.waitForCaptureStateChangeEvent(int(200)) #milliseconds
             #we've got a capture event
             #logger.debuglog("Capture State = %s" % (capture.getCaptureState()))
             if capture.getCaptureState() == xbmc.CAPTURE_STATE_DONE:
@@ -372,7 +382,7 @@ def run():
 def fade_light_hsv(light, hsvRatio):
   fullSpectrum = light.fullSpectrum
   h, s, v = hsvRatio.hue(fullSpectrum)
-  hvec = abs(h - light.hueLast) % int(255/2)
+  hvec = abs(h - light.hueLast) % int(65535/2)
   hvec = float(hvec/128.0)
   svec = s - light.satLast
   vvec = v - light.briLast

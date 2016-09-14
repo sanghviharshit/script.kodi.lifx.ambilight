@@ -243,7 +243,7 @@ class Light:
     self.fullSpectrum = True
     self.livingwhite = False
 
-    self.multiplier = 50
+    self.multiplier = 100
 
     self.logger.debuglog("light %s start settings: %s" % (self.light.get_label(), self.start_setting))
 
@@ -627,6 +627,6 @@ class Group(Light):
     self.livingwhite = False
     
     # Used for transition duration
-    self.multiplier = 50
+    self.multiplier = 100
 
     self.logger.debuglog("Group %s start settings: %s" % (self.group_id, self.start_setting))
