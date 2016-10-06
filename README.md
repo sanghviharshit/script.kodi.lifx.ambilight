@@ -85,4 +85,11 @@ Ambilight mode doesn't work on a Raspberry Pi due to the way it renders video
 - [@mclarkk](https://github.com/mclarkk) for creating [lifxlan](https://github.com/mclarkk/lifxlan/) - a Python library for accessing LIFX devices locally using the official LIFX LAN protocol.
 - [@mpolednik](https://github.com/mpolednik), [@michaelrcarroll](https://github.com/michaelrcarroll) and others for maintaining [script.kodi.hue.ambilight](https://github.com/mpolednik/script.kodi.hue.ambilight), originally started by [@cees-elzinga](https://github.com/mclarkk/cees-elzinga)
   
+## Pingbacks
+
+  - http://forum.kodi.tv/showthread.php?tid=289230
+  - https://www.reddit.com/r/lifx/comments/4z6wpt/kodi_xbmc_lifx_ambilight_video_test/
+  - https://www.reddit.com/r/Addons4Kodi/comments/501xm9/lifx_ambilight_addon_for_kodi/
+  - https://community.lifx.com/t/kodi-add-on-for-lifx-lights-with-ambilight-support/1673?u=harct
+
 [![Analytics](https://ga-beacon.appspot.com/UA-59542024-4/script.kodi.lifx.ambilight/)](https://github.com/igrigorik/ga-beacon)
