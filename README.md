@@ -68,6 +68,17 @@ A [Kodi](https://kodi.tv/) add-on that controls [Lifx](http://www.lifx.com/) lig
 - System -> Settings -> Add-ons -> Enabled add-ons -> Services -> Lifx Ambilight
 - Configure available settings.
 
+## Settings for specific Use cases
+
+**I have 3 (color/white) ceiling bulbs, 2 color bulbs behind the TV in my living room, and 4 more bulbs in my bedroom/bathroom. Would it be possible to set it up so that the 3 ceiling bulbs would dim (theater mode), use the 2 color lamps behind TV as ambilight, and don't use the 4 bulbs in bedroom/bathroom at all?**
+
+  - From your lifx app
+    1. Add the 3 ceiling bulbs to a separate group (e.g. theater)
+    2. Add the 2 color lamps behind TV to a separate group (e.g. ambilight)
+  - Now from addon settings
+    1. In the main settings, select the mode as Ambilight mode and enable for group of lights instead of All lights and use the group name from previous steps (e.g. ambilight lamps).
+    2. In the Ambilight settings - enable Dim before playback for group of lights and use appropriate group name (e.g. theater).
+
 ## Issues
 
 **Raspberry Pi users:**
