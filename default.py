@@ -62,7 +62,7 @@ class MyMonitor( xbmc.Monitor ):
 
   def onSettingsChanged( self ):
     logger.debuglog("running in mode %s" % str(hue.settings.mode))
-    last = datetime.now()
+    #last = datetime.now()
     hue.settings.readxml()
     hue.update_settings()
 
@@ -279,12 +279,17 @@ class Screenshot:
           h = int(tmph * 360)
           try:
               spectrum[h] += 1
-              saturation[h] = (saturation[h] + tmps)/2
-              value[h] = (value[h] + tmpv)/2
+              saturation[h] = saturation[h] + tmps
+              value[h] = value[h] + tmpv
           except KeyError:
               spectrum[h] = 1
               saturation[h] = tmps
               value[h] = tmpv
+
+      # Averaging saturation and value for each hue key in spectrum
+      for i in spectrum:
+        saturation[i] = saturation[i]/spectrum[i]
+        value[h] = value[h]/spectrum[i]
 
     overall_value = 1
     if int(i) != 0:
@@ -310,12 +315,13 @@ def run():
   last = time()
 
   #logger.debuglog("starting run loop!")
-  while not monitor.abortRequested():
+  while not monitor.abortRequested() and not xbmc.abortRequested:
 
+    #sleep(100)
     waitTimeout = 1; #seconds
 
     if hue.settings.mode == 0: # ambilight mode
-      waitTimeout = 0.05; #seconds
+      waitTimeout = 0.01; #seconds
       
       startReadOut = False
       vals = {}
@@ -334,24 +340,27 @@ def run():
         try:
           if useLegacyApi:
             #logger.debuglog("Waiting for capture state changed")
-            capture.waitForCaptureStateChangeEvent(int(200)) #milliseconds
+            capture.waitForCaptureStateChangeEvent(1000)
             #we've got a capture event
             #logger.debuglog("Capture State = %s" % (capture.getCaptureState()))
             if capture.getCaptureState() == xbmc.CAPTURE_STATE_DONE:
-              #logger.debuglog("Capture state = Done")
               startReadOut = True
           else:
-            vals = capture.getImage(int(100)) #
-            if len(vals) > 0:
+            pixels = capture.getImage(1000)
+            if len(pixels) > 0:
               startReadOut = True
+
           if startReadOut:
             if useLegacyApi:
-              vals = capture.getImage()
-              screen = Screenshot(vals, capture.getWidth(), capture.getHeight())
-            else:
-              screen = Screenshot(capture.getImage(), capture.getWidth(), capture.getHeight())
+              pixels = capture.getImage(1000)
+
+            width = capture.getWidth();
+            height = capture.getHeight();
+
+            screen = Screenshot(pixels, width, height)
             hsvRatios = screen.spectrum_hsv(screen.pixels, screen.capture_width, screen.capture_height)
             logger.debuglog("hsvRatios: %s" %(hsvRatios))
+
             if hue.settings.light == 0:
               if settings.color_variation == 0:
                 fade_light_hsv(hue.light, hsvRatios[0])
@@ -375,7 +384,6 @@ def run():
     if monitor.waitForAbort(waitTimeout):
       #kodi requested an abort, lets get out of here.
       break
-      
   del player #might help with slow exit.
   #del monitor
 
@@ -508,10 +516,11 @@ if ( __name__ == "__main__" ):
     capture.getCaptureState()
   except AttributeError:
     useLegacyApi = False
-  settings = MySettings()
 
+  settings = MySettings()
   logger = Logger()
   monitor = MyMonitor()
+
   if settings.debug == True:
     logger.debug()
 

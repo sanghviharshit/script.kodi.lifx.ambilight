@@ -336,10 +336,10 @@ class Light:
       self.light.set_power(False, rapid=False)
 
     # color is a list of HSBK values: [hue (0-65535), saturation (0-65535), brightness (0-65535), Kelvin (2500-9000)]
-    color = [int(data["hue"]),int(data["sat"]*65535/255),int(data["bri"]*65535/255),int(data["kel"])]
-    
-    color_log = [int(data["hue"]*360/65535),int(data["sat"]*100/255),int(data["bri"]*100/255),int(data["kel"])]
-    self.logger.debuglog("set_light2: %s: %s  (%s ms)" % (self.light.get_label(), color_log, data["transitiontime"]*self.multiplier))
+    # 65535/255 = 257
+    color = [int(data["hue"]),int(data["sat"]*257),int(data["bri"]*257),int(data["kel"])]
+    #color_log = [int(data["hue"]*360/65535),int(data["sat"]*100/255),int(data["bri"]*100/255),int(data["kel"])]
+    #self.logger.debuglog("set_light2: %s: %s  (%s ms)" % (self.light.get_label(), color_log, data["transitiontime"]*self.multiplier))
 
     # Lifxlan duration is in miliseconds
     self.light.set_color(color, data["transitiontime"]*self.multiplier, rapid=False)
@@ -562,10 +562,9 @@ class Group(Light):
     #self.logger.debuglog("Group: %s: number of bulbs - %s" % (self.group_id, len(self.lights)))
 
     # color is a list of HSBK values: [hue (0-65535), saturation (0-65535), brightness (0-65535), Kelvin (2500-9000)]
-    color = [int(data["hue"]), int(data["sat"]*65535/255), int(data["bri"]*65535/255), int(data["kel"])]
-    color_log = [int(data["hue"]*360/65535),int(data["sat"]*100/255),int(data["bri"]*100/255),int(data["kel"])]
-
-    self.logger.debuglog("set_light2: %s: %s  (%s ms)" % (self.group_id, color_log, data["transitiontime"]*self.multiplier))
+    color = [int(data["hue"]), int(data["sat"]*257), int(data["bri"]*257), int(data["kel"])]
+    #color_log = [int(data["hue"]*360/65535),int(data["sat"]*100/255),int(data["bri"]*100/255),int(data["kel"])]
+    #self.logger.debuglog("set_light2: %s: %s  (%s ms)" % (self.group_id, color_log, data["transitiontime"]*self.multiplier))
     for group_light in self.lights:
       # Lifxlan duration is in miliseconds
       #self.lights[group_light].set_power("on", data["transitiontime"]*100, rapid=False)
