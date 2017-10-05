@@ -4,3 +4,5 @@ from .msgtypes import *
 from .unpack import unpack_lifx_message
 from .device import *
 from .light import *
+from .multizonelight import *
+from .group import Group
