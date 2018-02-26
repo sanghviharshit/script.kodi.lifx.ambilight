@@ -334,7 +334,10 @@ class Light:
     #self.logger.debuglog("set_light2: %s: %s" % (self.light.get_label(), color))
 
     # Lifxlan duration is in miliseconds
-    self.light.set_color(color, data["transitiontime"]*100, rapid=False)
+    try:
+      self.light.set_color(color, data["transitiontime"]*100, rapid=False)
+    except WorkflowException:
+      self.logger.debuglog("set_color: %s failed to respond to a request" % self.light.get_label()
     #self.request_url_put("http://%s/api/%s/lights/%s/state" % \
     #  (self.bridge_ip, self.bridge_user, self.light), data=dataString)
 
@@ -564,7 +567,10 @@ class Group(Light):
       color = [int(data["hue"]), int(data["sat"]*65535/255), int(data["bri"]*65535/255), int(data["kel"])]
       # Lifxlan duration is in miliseconds
       #self.lights[group_light].set_color(color, data["transitiontime"]*100, rapid=False)
-      group_light.set_color(color, data["transitiontime"] * 100, rapid=False)
+      try:
+        group_light.set_color(color, data["transitiontime"] * 100, rapid=False)
+      except WorkflowException:
+        self.logger.debuglog("set_color: %s failed to respond to a request" % self.group_id)
 
   def dim_light(self):
     for light in self.lights:
