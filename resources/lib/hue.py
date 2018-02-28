@@ -116,7 +116,7 @@ class Hue:
         for l in self.light:
           #xbmc.sleep(1)
           l.dim_light()
-    
+
   def brighter_lights(self):
     self.logger.debuglog("class Hue: brighter lights")
     self.last_state = "brighter"
@@ -127,7 +127,7 @@ class Hue:
           #l.dim_light()  #why?
           #xbmc.sleep(1)
           l.brighter_light()
-      
+
   def partial_lights(self):
     self.logger.debuglog("class Hue: partial lights")
     self.last_state = "partial"
@@ -137,7 +137,7 @@ class Hue:
         for l in self.light:
           #xbmc.sleep(1)
           l.partial_light()
-      
+
   def update_settings(self):
     self.logger.debuglog("Class Hue: update settings")
     self.logger.debuglog(self.settings)
@@ -146,7 +146,7 @@ class Hue:
       self.light = Group(self.settings, self.settings.group_id)
       self.logger.debuglog("Added %s bulbs to the Group %s" %(str(len(self.light.lights)), self.settings.group_id))
     elif self.settings.light > 0:
-      self.logger.debuglog("creating Light instances")      
+      self.logger.debuglog("creating Light instances")
       bulbs = lifx.get_lights()
       self.light = [None] * len(bulbs)
       self.logger.debuglog("Number of bulbs " + str(len(self.light)))
@@ -219,7 +219,7 @@ class Light:
     self.kelLast = 0
 
     self.get_current_setting()
-    
+
   def get_current_setting(self):
     self.start_setting = {}
 
@@ -233,7 +233,7 @@ class Light:
     self.start_setting['sat'] = int(color[1]*255/65535)
     self.start_setting['bri'] = int(color[2]*255/65535)
     self.start_setting['kel'] = int(color[3])
-    
+
     self.onLast = self.start_setting['on']
     self.hueLast = self.start_setting['hue']
     self.satLast = self.start_setting['sat']
@@ -302,7 +302,7 @@ class Light:
       data["kel"] = self.kelLast
     else:
       data["kel"] = self.start_setting["kel"]
-    
+
     self.kelLast = data["kel"]
 
     time = 0
@@ -323,11 +323,11 @@ class Light:
     self.kelLast = data["kel"]
 
     data["transitiontime"] = time
-    
+
     dataString = json.dumps(data)
 
     #self.logger.debuglog("set_light2: %s: %s" % (self.light.get_label(), dataString))
-    
+
 
     if data["on"]:
       self.light.set_power(True, rapid=False)
@@ -342,7 +342,10 @@ class Light:
     #self.logger.debuglog("set_light2: %s: %s  (%s ms)" % (self.light.get_label(), color_log, data["transitiontime"]*self.multiplier))
 
     # Lifxlan duration is in miliseconds
-    self.light.set_color(color, data["transitiontime"]*self.multiplier, rapid=False)
+    try:
+        self.light.set_color(color, data["transitiontime"]*self.multiplier, rapid=False)
+    except WorkflowException:
+      self.logger.debuglog("set_color: %s failed to respond to a request" % self.light.get_label()
     #self.request_url_put("http://%s/api/%s/lights/%s/state" % \
     #  (self.bridge_ip, self.bridge_user, self.light), data=dataString)
 
@@ -572,7 +575,10 @@ class Group(Light):
         group_light.set_power(True, rapid=False)
 
       # Lifxlan duration is in miliseconds
-      group_light.set_color(color, data["transitiontime"]*self.multiplier, rapid=False)
+      try:
+          group_light.set_color(color, data["transitiontime"]*self.multiplier, rapid=False)
+      except WorkflowException:
+        self.logger.debuglog("set_color: %s failed to respond to a request" % self.group_id)
 
   def dim_light(self):
     for light in self.lights:
@@ -587,7 +593,7 @@ class Group(Light):
       self.lights[light].partial_light()
 
   def get_current_setting(self):
-    
+
     self.start_setting = {}
 
     #HPS
@@ -624,7 +630,7 @@ class Group(Light):
     #modelid = j['modelid']
     self.fullSpectrum = True
     self.livingwhite = False
-    
+
     # Used for transition duration
     self.multiplier = 100
 
