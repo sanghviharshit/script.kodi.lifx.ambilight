@@ -345,7 +345,7 @@ class Light:
     try:
         self.light.set_color(color, data["transitiontime"]*self.multiplier, rapid=False)
     except WorkflowException:
-      self.logger.debuglog("set_color: %s failed to respond to a request" % self.light.get_label()
+        self.logger.debuglog("set_color: %s failed to respond to a request" % self.light.get_label())
     #self.request_url_put("http://%s/api/%s/lights/%s/state" % \
     #  (self.bridge_ip, self.bridge_user, self.light), data=dataString)
 
