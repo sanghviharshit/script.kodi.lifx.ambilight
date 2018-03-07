@@ -6,12 +6,12 @@ from tools import notify, xbmclog
 
 def multiselect_lights(bridge_ip, bridge_user, label, exclude,
                        preselect):
-    xbmclog('Kodi Hue: In multiselect_lights(bridge_ip={}, bridge_user={}, '
+    xbmclog('In multiselect_lights(bridge_ip={}, bridge_user={}, '
             'label={}, exclude={}, preselect={})'.format(
                 bridge_ip, bridge_user, label, exclude, preselect)
             )
     lifx_lights = bridge.get_lights_by_ids(bridge_ip, bridge_user)
-    xbmclog('Kodi Hue: In multiselect_lights(lifx_lights={})'.format(
+    xbmclog('In multiselect_lights(lifx_lights={})'.format(
                 lifx_lights)
             )
 

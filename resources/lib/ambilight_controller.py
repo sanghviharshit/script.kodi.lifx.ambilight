@@ -11,7 +11,7 @@ class AmbilightController(lights.Controller):
             if resume == False:
                 self.save_state_as_initial()
 
-            xbmclog('Kodi Hue: In AmbilightController.on_playback_start() '
+            xbmclog('In AmbilightController.on_playback_start() '
                     'dimming ambilight group')
             self.set_state(
                 bri=self.settings.ambilight_start_dim,
@@ -20,7 +20,7 @@ class AmbilightController(lights.Controller):
 
     def on_playback_pause(self):
         if self.settings.ambilight_start_dim_enable:
-            xbmclog('Kodi Hue: In AmbilightController.on_playback_pause() '
+            xbmclog('In AmbilightController.on_playback_pause() '
                     'undimming ambilight group')
             if self.settings.ambilight_pause_bri_override:
                 bri = self.settings.ambilight_pause_bri
@@ -35,7 +35,7 @@ class AmbilightController(lights.Controller):
 
     def on_playback_stop(self):
         if self.settings.ambilight_start_dim_enable:
-            xbmclog('Kodi Hue: In AmbilightController.on_playback_stop() '
+            xbmclog('In AmbilightController.on_playback_stop() '
                     'undimming ambilight group')
             if self.settings.ambilight_stop_bri_override:
                 self.set_state(
