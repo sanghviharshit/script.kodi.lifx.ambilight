@@ -5,8 +5,9 @@
 from random import randint
 from socket import AF_INET, SOCK_DGRAM, SOL_SOCKET, SO_BROADCAST, SO_REUSEADDR, socket, timeout
 from time import sleep, time
+import os
 
-from .device import DEFAULT_ATTEMPTS, DEFAULT_TIMEOUT, Device, UDP_BROADCAST_IP, UDP_BROADCAST_PORT
+from .device import DEFAULT_ATTEMPTS, DEFAULT_TIMEOUT, Device, UDP_BROADCAST_IP_ADDRS, UDP_BROADCAST_PORT
 from .errors import InvalidParameterException, WorkflowException
 from .light import Light
 from .message import BROADCAST_MAC
@@ -19,7 +20,7 @@ from .group import Group
 
 class LifxLAN:
     def __init__(self, num_lights=None, verbose=False):
-        self.source_id = randint(0, (2**32)-1)
+        self.source_id = os.getpid()
         self.num_devices = num_lights
         self.num_lights = num_lights
         self.devices = None
@@ -202,7 +203,7 @@ class LifxLAN:
     #                                                                          #
     ############################################################################
 
-    def discover(self, timeout_secs=0.3, num_repeats=3):
+    def discover(self, timeout_secs=DEFAULT_TIMEOUT, num_repeats=3):
         self.initialize_socket(timeout_secs)
         msg = GetService(BROADCAST_MAC, self.source_id, seq_num=0, payload={}, ack_requested=False, response_requested=True)
         responses = []
@@ -215,7 +216,8 @@ class LifxLAN:
             timedout = False
             while not timedout:
                 if not sent:
-                    self.sock.sendto(msg.packed_message, (UDP_BROADCAST_IP, UDP_BROADCAST_PORT))
+                    for ip_addr in UDP_BROADCAST_IP_ADDRS:
+                        self.sock.sendto(msg.packed_message, (ip_addr, UDP_BROADCAST_PORT))
                     sent = True
                     if self.verbose:
                         print("SEND: " + str(msg))
@@ -244,7 +246,8 @@ class LifxLAN:
         sent_msg_count = 0
         sleep_interval = 0.05 if num_repeats > 20 else 0
         while(sent_msg_count < num_repeats):
-            self.sock.sendto(msg.packed_message, (UDP_BROADCAST_IP, UDP_BROADCAST_PORT))
+            for ip_addr in UDP_BROADCAST_IP_ADDRS:
+                self.sock.sendto(msg.packed_message, (ip_addr, UDP_BROADCAST_PORT))
             if self.verbose:
                 print("SEND: " + str(msg))
             sent_msg_count += 1
@@ -270,7 +273,8 @@ class LifxLAN:
             timedout = False
             while num_devices_seen < self.num_devices and not timedout:
                 if not sent:
-                    self.sock.sendto(msg.packed_message, (UDP_BROADCAST_IP, UDP_BROADCAST_PORT))
+                    for ip_addr in UDP_BROADCAST_IP_ADDRS:
+                        self.sock.sendto(msg.packed_message, (ip_addr, UDP_BROADCAST_PORT))
                     sent = True
                     if self.verbose:
                         print("SEND: " + str(msg))
@@ -317,14 +321,11 @@ class LifxLAN:
         self.sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.sock.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
         self.sock.settimeout(timeout)
-        port = UDP_BROADCAST_PORT
-        success = False
-        while not success:
-            try:
-                self.sock.bind(("", port))
-                success = True
-            except: # address (port) already in use, maybe another client on the same computer...
-                port += 1
+        try:
+            self.sock.bind(("", 0))  # allow OS to assign next available source port
+        except Exception as err:
+            raise WorkflowException("WorkflowException: error {} while trying to open socket".format(str(err)))
+
 
     def close_socket(self):
         self.sock.close()
