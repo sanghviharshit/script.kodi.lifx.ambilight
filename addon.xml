@@ -12,13 +12,27 @@
         <language>en</language>
         <platform>all</platform>
         <forum>https://github.com/sanghviharshit/script.kodi.lifx.ambilight/issues</forum>
-        <website>https://github.com/sanghviharshit/script.kodi.lifx.ambilight/</website>
-        <source></source>
+        <license>GNU General Public License v2.0</license>
+        <website>https://sanghviharshit.github.io/script.kodi.lifx.ambilight/</website>
+        <source>https://github.com/sanghviharshit/script.kodi.lifx.ambilight</source>
         <email>hello@sanghviharshit.com</email>
         <news>
             0.1.2 (2017-09-28)
             - Updated LifxLAN version
         </news>
+        <assets>
+            <icon>resources/icon.png</icon>
+            <fanart>resources/fanart.jpg</fanart>
+            <banner></banner>
+            <clearlogo></clearlogo>
+            <screenshot>resources/screenshot-01.jpg</screenshot>
+            <screenshot>resources/screenshot-02.jpg</screenshot>
+            <screenshot>resources/screenshot-03.jpg</screenshot>
+            <screenshot>resources/screenshot-04.jpg</screenshot>
+            <screenshot>resources/screenshot-05.jpg</screenshot>
+            <screenshot>resources/screenshot-06.jpg</screenshot>
+            <screenshot>resources/screenshot-07.jpg</screenshot>
+        </assets>
     </extension>
     <extension point="xbmc.addon.repository" name="Harshit's Add-on Repository">
         <info compressed="false">https://raw.github.com/sanghviharshit/repository.kodi.hps/master/addons.xml</info>
