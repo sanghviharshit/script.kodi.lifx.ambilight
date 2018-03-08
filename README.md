@@ -126,7 +126,14 @@ Ambilight mode doesn't work on a Raspberry Pi due to the way it renders video
   - Theatre sunset/sunrise
   - Force lights `on` based on time of day
   - Lifx Z Multizone support
-  - Update screenshots, video
+  - Update screenshots
+  - Update Demo video
+  - Add better descriptions for each settings for more use cases
+  - Bring the addon debug setting back
+  - IFTTT integration
+  - Home assistant integration ?
+  - Maintain kodi branch of sanghviharshit/lifxlan repository
+  -
 
 
 ## Support
