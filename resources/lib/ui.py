@@ -23,7 +23,7 @@ def multiselect_lights(bridge_ip, bridge_user, label, exclude,
     if lifx_lights:
         for light_id, light in lifx_lights.items():
             if str(light_id) not in exclude.split(','):
-                items.append(xbmcgui.ListItem(label=light.name))
+                items.append(xbmcgui.ListItem(label=light_id))
                 actual_lights.append(light)
                 if str(light_id) in preselect.split(','):
                     preselect_items.append(index)

@@ -1,4 +1,4 @@
-import socket
+# import socket
 import time
 
 import lights
@@ -50,6 +50,8 @@ def discover():
     else:
       xbmclog("discover() - No Lifx lights found")
       notify("Kodi Lifx", "No Lifx lights found")
+    hide_busy_dialog()
+    return "127.0.0.1"
 
     """
     bridge_ip = _discover_upnp()
@@ -58,10 +60,11 @@ def discover():
 
     return bridge_ip
     """
-    hide_busy_dialog()
-    return "127.0.0.1"
+
 
 def create_user(bridge_ip, notify=True):
+    return "kodi"
+
     """
     device = 'kodi#ambilight'
     data = '{{"devicetype": "{}"}}'.format(device)
@@ -80,7 +83,6 @@ def create_user(bridge_ip, notify=True):
 
     return username
     """
-    return "kodi"
 
 
 def get_lights(bridge_ip, username, refresh=False):
@@ -89,11 +91,11 @@ def get_lights(bridge_ip, username, refresh=False):
     if lights_cache == None or len(lights_cache) == 0 or refresh == True:
         try:
             lights_cache = lan.get_lights()
-            xbmclog("get_lights() - Found {} Lifx lights".format(str(len(lights_cache))))
-        except:
-            pass
+            xbmclog("get_lights(refresh={}) - Found {} Lifx lights".format(refresh, str(len(lights_cache))))
+        except Exception as e:
+            xbmclog("get_lights(refresh={}) - Exception - {}".format(refresh,str(e)))
     else:
-        xbmclog("get_lights() - Returning {} cached Lifx lights".format(str(len(lights_cache))))
+        xbmclog("get_lights(refresh={}) - Returning {} cached Lifx lights".format(refresh, str(len(lights_cache))))
     return lights_cache
 
 
@@ -116,20 +118,21 @@ def get_lights_by_ids(bridge_ip, username, light_ids=None):
    """
     show_busy_dialog()
     found = {}
-    xbmclog("In get_lights_by_ids() - light_ids - {}".format(light_ids))
+    xbmclog("get_lights_by_ids(light_ids={})".format(light_ids))
     if light_ids == None:
         lifx_lights = get_lights(bridge_ip, username)
         if lifx_lights and len(lifx_lights) > 0:
             lifx_lights_ids = [lifx_light.get_label() for lifx_light in lifx_lights]
-            xbmclog("get_lights_by_ids() - lifx_lights - {}".format(lifx_lights_ids))
+            # xbmclog("get_lights_by_ids(light_ids={}) - lifx_lights - {}".format(light_ids, lifx_lights_ids))
             for lifx_light in lifx_lights:
                 try:
                     light_id = lifx_light.get_label()
-                    xbmclog("get_lights_by_ids() - Adding {}".format(light_id))
-                    found[light_id] = lights.Light(bridge_ip, username, light_id,
-                                                lifx_light)
-                except:
-                    pass
+                    xbmclog("get_lights_by_ids(light_ids={}) - Adding {}".format(light_ids, light_id))
+                    found[light_id] = lifx_light
+                    # found[light_id] = lights.Light(bridge_ip, username, light_id,
+                                                # lifx_light)
+                except Exception as e:
+                    xbmclog("get_lights_by_ids(light_ids={}) - get_label() for {} - Exception - {}".format(light_ids, lifx_light, str(e)))
     elif light_ids == ['']:
         found = {}
     else:
@@ -138,11 +141,12 @@ def get_lights_by_ids(bridge_ip, username, light_ids=None):
             for light_id in light_ids:
                 for lifx_light in lifx_lights:
                     if lifx_light.get_label() == light_id:
-                        xbmclog("get_lights_by_ids() - Found {}".format(light_id))
-                        found[light_id] = lights.Light(bridge_ip, username, light_id,
-                                                lifx_light)
+                        xbmclog("get_lights_by_ids(light_ids={}) - Found {}".format(light_ids, light_id))
+                        found[light_id] = lifx_light
+                        # found[light_id] = lights.Light(bridge_ip, username, light_id,
+                                                # lifx_light)
 
-    xbmclog("get_lights_by_ids() - Returning {} Lifx lights".format(str(len(found))))
+    xbmclog("get_lights_by_ids(light_ids={}) - Returning {} Lifx lights".format(light_ids, str(len(found))))
     hide_busy_dialog()
     return found
 
@@ -157,8 +161,8 @@ def get_lights_by_group(bridge_ip, username, group_id):
     """
     try:
         devices_by_group = lan.get_devices_by_group(group_id)
-    except:
-        pass
+    except Exception as e:
+        xbmclog("get_lights_by_group(group_id={}) - Exception - {}".format(group_id, str(e)))
     # device_ids = [device.get_label() for device in devices_by_group.get_device_list()]
 
     found = {}
@@ -169,6 +173,7 @@ def get_lights_by_group(bridge_ip, username, group_id):
 
     return get_lights_by_ids(bridge_ip, username, device_ids)
 
+"""
 def _discover_upnp():
     port = 1900
     ip = "239.255.255.250"
@@ -208,3 +213,4 @@ def _discover_nupnp():
         bridge_ip = res[0]["internalipaddress"]
 
     return bridge_ip
+"""
