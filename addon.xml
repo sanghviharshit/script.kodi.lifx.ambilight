@@ -1,16 +1,20 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-    <addon id="script.kodi.lifx.ambilight" version="0.1.3"
+    <addon id="script.kodi.lifx.ambilight" version="1.0.0"
       name="Kodi Lifx Ambilight" provider-name="Harshit Sanghvi">
     <requires>
-        <import addon="xbmc.python" version="2.1.0"/>
-        <import addon="script.module.requests" version="2.3.0" />
+        <import addon="xbmc.python" version="2.25.0"/>
     </requires>
-    <extension point="xbmc.service" library="default.py" start="login"></extension>
+    <extension point="xbmc.service" library="default.py"></extension>
     <!-- <extension point="xbmc.python.script" library="default.py" /> -->
     <extension point="xbmc.addon.metadata">
         <summary>Kodi-controlled Lifx lights</summary>
-        <description>Let Kodi control your Lifx lights. Turn the lights into a room-sized ambilight, and automatically dim and un-dim them when playback starts/stops.</description>
-        <disclaimer>By using this, you take reponsibility for anything that happens.</disclaimer>
+        <description>Let Kodi control your Lifx lights. Turn the lights into a room-sized theater with ambilight, and automatically dim and un-dim them when playback starts/stops.
+          It controls Lifx lights based on the following light groups, fully configurable using the setup wizard from addon settings:
+          1. Theater Group - Dim the lights when playback starts, undim when paused, restore when stops
+          2. Ambilight Group - Change color and brightness of lights based on the current picture frame
+          3. Static Group - Turn the light on when playback starts, off when it stops
+        </description>
+        <disclaimer lang="en_GB">By using this addon, you take full reponsibility for anything that happens.</disclaimer>
         <language>en</language>
         <platform>all</platform>
         <forum>https://github.com/sanghviharshit/script.kodi.lifx.ambilight/issues</forum>
@@ -19,8 +23,14 @@
         <source>https://github.com/sanghviharshit/script.kodi.lifx.ambilight</source>
         <email>hello@sanghviharshit.com</email>
         <news>
-            0.1.3 (2018-03-02)
-            - better exception handling when light state update fails
+            1.0.0 (2018-03-08)
+            - All new version with lots of new features and stability
+            - Port latest code from mpolednik/script.kodi.hue.ambilight with lots of new features (e.g. setup wizard for light groups)
+            - Improve algorithm for calculating color and brightness from picture frame for Ambilight
+            - Update to latest Lifxlan module
+            - New settings (including color variation flag for multiple lights)
+            - Better logging
+            - Improved performance
         </news>
         <assets>
             <icon>resources/icon.png</icon>
