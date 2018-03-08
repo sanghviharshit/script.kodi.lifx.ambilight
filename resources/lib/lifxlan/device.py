@@ -30,7 +30,7 @@ from .msgtypes import Acknowledgement, GetGroup, GetHostFirmware, GetInfo, GetLa
 from .products import features_map, product_map, light_products
 from .unpack import unpack_lifx_message
 
-DEFAULT_TIMEOUT = 0.5
+DEFAULT_TIMEOUT = 1 #second
 DEFAULT_ATTEMPTS = 5
 
 VERBOSE = False
@@ -48,6 +48,21 @@ def get_broadcast_addr():
     return broadcast
 
 UDP_BROADCAST_IP = get_broadcast_addr()
+
+def get_broadcast_addrs():
+    """
+    broadcast_addrs = []
+    for iface in ni.interfaces():
+        try:
+            ifaddr = ni.ifaddresses(iface)[ni.AF_INET][0]
+            if ifaddr['addr'] != '127.0.0.1':
+                broadcast_addrs.append(ifaddr['broadcast'])
+        except: # for interfaces that don't support ni.AF_INET
+            pass
+    return broadcast_addrs
+    """
+    return [get_broadcast_addr()]
+UDP_BROADCAST_IP_ADDRS = get_broadcast_addrs()
 UDP_BROADCAST_PORT = 56700
 
 class Device(object):
@@ -364,6 +379,11 @@ class Device(object):
             self.product_features = self.get_product_features()
         return self.product_features['color']
 
+    def supports_temperature(self):
+        if self.product_features == None:
+            self.product_features = self.get_product_features()
+        return self.product_features['temperature']
+
     def supports_multizone(self):
         if self.product_features == None:
             self.product_features = self.get_product_features()
@@ -452,7 +472,8 @@ class Device(object):
             if self.ip_addr:
                 self.sock.sendto(msg.packed_message, (self.ip_addr, self.port))
             else:
-                self.sock.sendto(msg.packed_message, (UDP_BROADCAST_IP, self.port))
+                for ip_addr in UDP_BROADCAST_IP_ADDRS:
+                    self.sock.sendto(msg.packed_message, (ip_addr, self.port))
             if self.verbose:
                 print("SEND: " + str(msg))
             sent_msg_count += 1
@@ -483,7 +504,11 @@ class Device(object):
             timedout = False
             while not response_seen and not timedout:
                 if not sent:
-                    self.sock.sendto(msg.packed_message, (UDP_BROADCAST_IP, self.port))
+                    if self.ip_addr:
+                        self.sock.sendto(msg.packed_message, (self.ip_addr, self.port))
+                    else:
+                        for ip_addr in UDP_BROADCAST_IP_ADDRS:
+                            self.sock.sendto(msg.packed_message, (ip_addr, self.port))
                     sent = True
                     if self.verbose:
                         print("SEND: " + str(msg))
@@ -525,14 +550,10 @@ class Device(object):
         self.sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.sock.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
         self.sock.settimeout(timeout)
-        port = UDP_BROADCAST_PORT
-        success = False
-        while not success:
-            try:
-                self.sock.bind(("", port))
-                success = True
-            except: # address (port) already in use, maybe another client on the same computer...
-                port += 1
+        try:
+            self.sock.bind(("", 0))  # allow OS to assign next available source port
+        except Exception as err:
+            raise WorkflowException("WorkflowException: error {} while trying to open socket".format(str(err)))
 
     def close_socket(self):
         self.sock.close()

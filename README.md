@@ -1,42 +1,62 @@
 # Lifx (Ambilight) Addon for Kodi
 
-A [Kodi](https://kodi.tv/) add-on that controls [Lifx](http://www.lifx.com/) lights. In `Theater mode` the add-on dims the Lifx lights as soon as a movie starts playing, and turns the lights back to original settings once the movie is done. `Ambilight mode` turns your Lifx lights in a room-sized **[Ambilight](https://en.wikipedia.org/wiki/Ambilight).**
+A [Kodi](https://kodi.tv/) add-on for your [Lifx](http://www.lifx.com/) lights.
 
->Ambilight creates light effects around the television that correspond to the video content. Philips claims that a "more immersive viewing experience" can result. Ambilight is a lighting system that actively adjusts both brightness and color based upon picture content. Integrated into the television cabinet, Ambilight technology is aimed to enable the viewer to see more picture detail, contrast and color while eliminating on-screen reflections.
+## Compatibility
+|Kodi v16|Kodi v17+|
+|--------|---------|
+|[download](https://github.com/sanghviharshit/script.kodi.lifx.ambilight/archive/0.1.3.zip)|[download](https://github.com/sanghviharshit/script.kodi.lifx.ambilight/archive/develop.zip)|
+|Release v0.1.3|Branch "master" or "develop"|
 
->Ambilight technology works by projecting light from the rear of the TV cabinet in a very wide range of colors, shades and intensities. Viewers can choose to have Ambilight follow the color and brightness of the programme content – automatically changing with the colors on the screen
+## Description
+
+This [Kodi](https://kodi.tv/) add-on controls [Lifx](http://www.lifx.com/) lights based on the following light groups, fully configurable using the setup wizard from addon settings.
+
+### Theater Group
+  Lights in the theater group act like wall lights in a typical theater. When playback starts the lights dim and they undim when playback is paused or ends. If you only want some of the lights to undim during pause, it is possible to configure "subgroup" in add-on settings -> Theater and only dim the subgroup.
+### Ambilight Group
+  **[Ambilight](https://en.wikipedia.org/wiki/Ambilight)** group tries to control the lights similarly to modern ambilight TVs. The add-on tries to figure out the most represented colors and brightness in each frame and change the lights to reflect that. They can also be configured to work similarly to theater group when playback is paused.
+  Turns the Lifx lights in `Ambilight` group in to a room-sized  environment.
+
+### Static Group
+  Static lights act opposite to the theater lights -- they are turned on when playback starts, turned off when you pause the playback and go back to initial state after the playback stops.
 
 ## Features
-
 - Fully customizable
-  - Select `All lights` or a `Group of lights`.
-  - `Override` brightness/hue/saturation for different states in Ambilight mode - playback started/resumed and paused.
+  - Each group fully configurable with a discovery and selection wizard.
+  - `Override` brightness/hue/saturation/temperature for different states in each of the theater/ambilight/static group - playback started/resumed, paused and stopped.
   - Option to forcefully `turn on` or `ignore` lights which are powered off (not switched off)
   - Option to `flash` lights once on discovery
   - Option to disable the Theater/Ambilight mode for `short videos`
     - Option to customize what is considered a *short* video
-  - `Experimental`: Option to undim lights when `credits` start rolling. (Uses ChapterDB.org)
-    - Option to delay the credits start time.
-    - *Does not always work, may ruin your movie-watching experience*
+  - ~~`Experimental`: Option to undim lights when `credits` start rolling. (Uses ChapterDB.org)~~
+    - ~~Option to delay the credits start time.~~
+    - ~~*Does not always work, may ruin your movie-watching experience*~~
   - `Restore` the lights to original states (color and power) when movie stops.
-- 2 Modes for your Lifx powered media center room
-  - `Theatre Mode`
+- 3 groups for your Lifx powered media center room
+  - `Theatre`
     - `Dim` or Turn off the lights when Movie starts `playing`
     - `Undim` or Turn on the lights when you `pause` the movie
     - Return the lights to `original` settings when Movie ends.
     - Option to configure Fading time to be `proportional` to the current brightness. (e.g. take 7 seconds to change brightness from 100% to 30%, while taking 5 seconds to change from 50% to 0%)
-  - `Ambilight Mode`
+  - `Ambilight`
     - Option to `Dim` the lights when Movie starts playing
     - Option to change `minimum` and `maximum` brightness
+    - Option to configure threshold (minimum) values for brightness and saturation when calculating the color/brighness from picture frame.
+    - Option to set different colors for different lights or same color for all lights
+    - Option to configure bias value (lower the bias - more variety of colors, higher the bias - less variety of colors, but higher accuracy)
+  - `Static`
+    - Option to set random color to the static lights that turn on when the video playback starts.
+    - Option to override hue, saturation, brightness or temperature values
+
+
 
 ## Demo
-### Kodi + Lifx + Ambilight + Movie (LOTR) Test 
-[![Kodi + Lifx + Ambilight + Movie (LOTR) Test](http://img.youtube.com/vi/LZui0Ui4hTQ/0.jpg)]
-(http://www.youtube.com/watch?v=LZui0Ui4hTQ "Kodi + Lifx + Ambilight + Movie (LOTR) Test")
+### Kodi + Lifx + Ambilight + Movie (LOTR) Test
+[![Kodi + Lifx + Ambilight + Movie (LOTR) Test](http://img.youtube.com/vi/LZui0Ui4hTQ/0.jpg)](http://www.youtube.com/watch?v=LZui0Ui4hTQ "Kodi + Lifx + Ambilight + Movie (LOTR) Test")
 
 ### Kodi (XBMC) + Lifx + Ambilight + Video Test
-[![Kodi (XBMC) + Lifx + Ambilight + Video Test](http://img.youtube.com/vi/UbWo8LaXDlE/0.jpg)]
-(http://www.youtube.com/watch?v=UbWo8LaXDlE "Kodi (XBMC) + Lifx + Ambilight + Video Test")
+[![Kodi (XBMC) + Lifx + Ambilight + Video Test](http://img.youtube.com/vi/UbWo8LaXDlE/0.jpg)](http://www.youtube.com/watch?v=UbWo8LaXDlE "Kodi (XBMC) + Lifx + Ambilight + Video Test")
 
 ### Other Ambient Lighting Demo
 [![Kodi Philips hue Ambilight mode](http://img.youtube.com/vi/iQ6W_JA42KQ/default.jpg)](http://www.youtube.com/watch?v=iQ6W_JA42KQ "Kodi Philips hue Ambilight mode")
@@ -46,6 +66,7 @@ A [Kodi](https://kodi.tv/) add-on that controls [Lifx](http://www.lifx.com/) lig
 [![Kodi with Hue ambilight](http://img.youtube.com/vi/_t4RpS4Dwag/default.jpg)](http://www.youtube.com/watch?v=_t4RpS4Dwag "Kodi + Philips hue")
 
 ## [Screenshots](http://imgur.com/gallery/V9Dxh)
+### As of Aug 28, 2016
 #### Addon Information
 [![Addon Information](http://i.imgur.com/9eVRc8Nm.jpg)](http://i.imgur.com/9eVRc8N.jpg)
 
@@ -68,18 +89,23 @@ A [Kodi](https://kodi.tv/) add-on that controls [Lifx](http://www.lifx.com/) lig
 - System -> Settings -> Add-ons -> Enabled add-ons -> Services -> Lifx Ambilight
 - Configure available settings.
 
-## Settings for specific Use cases
+## Example Use Case
+I have 7 Lifx lights - `TV Left`, `TV Right`, `Ceiling 1`, `Ceiling 2`, `Kitchen 1`, `Kitchen 2`, `Hallway`.
 
-**I have 3 (color/white) ceiling bulbs, 2 color bulbs behind the TV in my living room, and 4 more bulbs in my bedroom/bathroom. Would it be possible to set it up so that the 3 ceiling bulbs would dim (theater mode), use the 2 color lamps behind TV as ambilight, and don't use the 4 bulbs in bedroom/bathroom at all?**
+I want to use
+  - `TV Left`, `TV Right` as ambilight.
+  - `Ceilin 1`, `Ceiling 2` as theater lights, so they dim/turn off when the video playback starts, undim on pause and restore original state when video stops.
+  - `Hallway` light as `Static` light that will turn on when we are watching movie
+  - Leave `Kitchen 1` and `Kitchen 2` untouched.
 
-  - From your lifx app
-    1. Add the 3 ceiling bulbs to a separate group (e.g. theater)
-    2. Add the 2 color lamps behind TV to a separate group (e.g. ambilight)
-  - Now from addon settings
-    1. In the main settings, select the mode as Ambilight mode and enable for group of lights instead of All lights and use the group name from previous steps (e.g. ambilight lamps).
-    2. In the Ambilight settings - enable Dim before playback for group of lights and use appropriate group name (e.g. theater).
+For this, you can configure the addon settings as the following
+  - Click start discovery to find all your Lifx lights first.
+  - Click Setup for each group that you want to configure and select the lights you want to add in each of those groups.
+  - Next, configure the settings for each of the groups.
+  - Click ok to save the settings.
 
-## Issues
+
+## Known Issues
 
 **Raspberry Pi users:**
   - Save the add-on configuration by exiting Kodi before shutting down the Pi completely
@@ -88,14 +114,40 @@ Ambilight mode doesn't work on a Raspberry Pi due to the way it renders video
 **ARM based devices/Nexus Player/Any other Android devices:**
   - Try disabling Mediacodec (Surface) in Settings > Video> Acceleration. This seems to fix the problem. [Reference](https://github.com/michaelrcarroll/script.kodi.hue.ambilight/issues/30)
 
-**Other issues:**
-  - Please use Github issue tracker for reporting new issues.
+**Nvidia Shield / most Android boxes:**
+  - Ambilight mode doesn't properly work with 4k-HD codecs (>1080p) when "allow hardware acceleration - Mediacodec (Surface)" is enabled.
+
+**Addon settings:**
+  - When configuring groups, for window to properly react, one has to press OK after selecting the bulbs and then OK to exit the configuration and re-enter it
+
+## Todo:
+  - Credits undimming was removed, will be reimplemented when the state checking gets more robust
+  - Add tests
+  - Theatre sunset/sunrise
+  - Force lights `on` based on time of day
+  - Lifx Z Multizone support
+  - Update screenshots
+  - Update Demo video
+  - Add better descriptions for each settings for more use cases
+  - Bring the addon debug setting back
+  - IFTTT integration
+  - Home assistant integration ?
+  - Maintain kodi branch of sanghviharshit/lifxlan repository
+  -
+
+
+## Support
+  - If you find a problem or missing feature, open an issue or a pull requests on https://github.com/sanghviharshit/script.kodi.lifx.ambilight
+  - To have a higher chance of issue being solved, please attach a log file. To record one, go to settings wheel -> System settings -> Logging -> Enable Debug Logging and follow the procedure at http://kodi.wiki/view/Log_file/Easy
+
 
 ## Credits
 
 - [@mclarkk](https://github.com/mclarkk) for creating [lifxlan](https://github.com/mclarkk/lifxlan/) - a Python library for accessing LIFX devices locally using the official LIFX LAN protocol.
 - [@mpolednik](https://github.com/mpolednik), [@michaelrcarroll](https://github.com/michaelrcarroll) and others for maintaining [script.kodi.hue.ambilight](https://github.com/mpolednik/script.kodi.hue.ambilight), originally started by [@cees-elzinga](https://github.com/mclarkk/cees-elzinga)
-  
+
+
+
 ## Pingbacks
 
   - http://forum.kodi.tv/showthread.php?tid=289230

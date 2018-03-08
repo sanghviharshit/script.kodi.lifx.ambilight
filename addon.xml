@@ -5,20 +5,35 @@
         <import addon="xbmc.python" version="2.1.0"/>
     </requires>
     <extension point="xbmc.service" library="default.py"></extension>
+    <extension point="xbmc.python.script" library="default.py" /> 
     <extension point="xbmc.addon.metadata">
         <summary>Kodi-controlled Lifx lights</summary>
-        <description>Let Kodi control your Lifx lights. Either turns the lights into a room-sized ambilight, or automatically dims and un-dims them when playback starts.</description>
+        <description>Let Kodi control your Lifx lights. Turn the lights into a room-sized ambilight, and automatically dim and un-dim them when playback starts/stops.</description>
         <disclaimer>By using this, you take reponsibility for anything that happens.</disclaimer>
         <language>en</language>
         <platform>all</platform>
         <forum>https://github.com/sanghviharshit/script.kodi.lifx.ambilight/issues</forum>
-        <website>https://github.com/sanghviharshit/script.kodi.lifx.ambilight/</website>
-        <source></source>
+        <license>GNU General Public License v2.0</license>
+        <website>https://sanghviharshit.github.io/script.kodi.lifx.ambilight/</website>
+        <source>https://github.com/sanghviharshit/script.kodi.lifx.ambilight</source>
         <email>hello@sanghviharshit.com</email>
         <news>
             0.1.3 (2018-03-02)
             - better exception handling when light state update fails
         </news>
+        <assets>
+            <icon>resources/icon.png</icon>
+            <fanart>resources/fanart.jpg</fanart>
+            <banner></banner>
+            <clearlogo></clearlogo>
+            <screenshot>resources/screenshot-01.jpg</screenshot>
+            <screenshot>resources/screenshot-02.jpg</screenshot>
+            <screenshot>resources/screenshot-03.jpg</screenshot>
+            <screenshot>resources/screenshot-04.jpg</screenshot>
+            <screenshot>resources/screenshot-05.jpg</screenshot>
+            <screenshot>resources/screenshot-06.jpg</screenshot>
+            <screenshot>resources/screenshot-07.jpg</screenshot>
+        </assets>
     </extension>
     <extension point="xbmc.addon.repository" name="Harshit's Add-on Repository">
         <info compressed="false">https://raw.github.com/sanghviharshit/repository.kodi.hps/master/addons.xml</info>
