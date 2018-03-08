@@ -1,4 +1,5 @@
 import os
+import xbmcgui
 
 TESTING_ENV = False
 
@@ -8,7 +9,7 @@ try:
 
     __addon__ = xbmcaddon.Addon()
     __cwd__ = __addon__.getAddonInfo('path')
-    __icon__ = os.path.join(__cwd__, "icon.png")
+    __icon__ = os.path.join(__cwd__, "resources/icon.png")
     __settings__ = os.path.join(__cwd__, "resources", "settings.xml")
     __xml__ = os.path.join(__cwd__, 'addon.xml')
 except ImportError:
@@ -40,10 +41,19 @@ def get_version():
     except:
         return "unknown"
 
+pDialog = None
+
 def show_busy_dialog():
-    xbmc.executebuiltin('ActivateWindow(busydialog)')
+    pass
+    # xbmc.executebuiltin('ActivateWindow(busydialog)')
+    # pDialog = xbmcgui.DialogProgressBG()
+    # pDialog.create('Kodi Lifx', 'Processing your request...')
 
 def hide_busy_dialog():
-    xbmc.executebuiltin('Dialog.Close(busydialog)')
-    while xbmc.getCondVisibility('Window.IsActive(busydialog)'):
-        xbmc.sleep(100)
+    pass
+    # xbmc.executebuiltin('Dialog.Close(busydialog)')
+    # while xbmc.getCondVisibility('Window.IsActive(busydialog)'):
+        # xbmc.sleep(100)
+    # if pDialog:
+    #     pDialog.update(100, message='Done')
+    #     pDialog.close()
