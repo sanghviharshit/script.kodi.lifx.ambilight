@@ -5,9 +5,10 @@
         <import addon="xbmc.python" version="2.1.0"/>
     </requires>
     <extension point="xbmc.service" library="default.py"></extension>
+    <extension point="xbmc.python.script" library="default.py" /> 
     <extension point="xbmc.addon.metadata">
         <summary>Kodi-controlled Lifx lights</summary>
-        <description>Let Kodi control your Lifx lights. Either turns the lights into a room-sized ambilight, or automatically dims and un-dims them when playback starts.</description>
+        <description>Let Kodi control your Lifx lights. Turn the lights into a room-sized ambilight, and automatically dim and un-dim them when playback starts/stops.</description>
         <disclaimer>By using this, you take reponsibility for anything that happens.</disclaimer>
         <language>en</language>
         <platform>all</platform>
