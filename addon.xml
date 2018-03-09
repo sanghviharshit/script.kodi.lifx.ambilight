@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-    <addon id="script.kodi.lifx.ambilight" version="0.1.2"
+    <addon id="script.kodi.lifx.ambilight" version="0.1.3"
       name="Kodi Lifx Ambilight" provider-name="Harshit Sanghvi">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
     </requires>
     <extension point="xbmc.service" library="default.py"></extension>
-    <extension point="xbmc.python.script" library="default.py" /> 
+    <extension point="xbmc.python.script" library="default.py" />
     <extension point="xbmc.addon.metadata">
         <summary>Kodi-controlled Lifx lights</summary>
         <description>Let Kodi control your Lifx lights. Turn the lights into a room-sized ambilight, and automatically dim and un-dim them when playback starts/stops.</description>
