@@ -2,11 +2,14 @@
 
 A [Kodi](https://kodi.tv/) add-on for your [Lifx](http://www.lifx.com/) lights.
 
+[![Say Thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/sanghviharshit)
+
 ## Compatibility
 |Kodi v16|Kodi v17+|
 |--------|---------|
+|Release v0.1.3|Branch "develop"|
 |[download](https://github.com/sanghviharshit/script.kodi.lifx.ambilight/archive/0.1.3.zip)|[download](https://github.com/sanghviharshit/script.kodi.lifx.ambilight/archive/develop.zip)|
-|Release v0.1.3|Branch "master" or "develop"|
+
 
 ## Description
 
@@ -82,12 +85,13 @@ This [Kodi](https://kodi.tv/) add-on controls [Lifx](http://www.lifx.com/) light
 ## Installation
 
 - Download the add-on as a ZIP file from the top of this page
-  - (Right click on the "ZIP" icon and select "Download Linked File")
+  - (Click on the green "Clone or download button" then click on the "Download ZIP" link)
 - Open Kodi
-- Go to System -> Settings -> Add-ons -> Install from zip file
+- Go to System -> Settings -> Add-ons -> Install from zip file.
+- Select the zip file from the location where you downloaded the zip file
 - Restart Kodi and configure the add-on:
-- System -> Settings -> Add-ons -> Enabled add-ons -> Services -> Lifx Ambilight
-- Configure available settings.
+  - System -> Settings -> Add-ons -> Enabled add-ons -> Services -> Lifx Ambilight
+  - Configure available settings.
 
 ## Example Use Case
 I have 7 Lifx lights - `TV Left`, `TV Right`, `Ceiling 1`, `Ceiling 2`, `Kitchen 1`, `Kitchen 2`, `Hallway`.
@@ -135,6 +139,7 @@ Ambilight mode doesn't work on a Raspberry Pi due to the way it renders video
   - Maintain kodi branch of sanghviharshit/lifxlan repository
   - Add settings for broadcast IP address for LifxLAN discovery, since we are not using netifaces module from LifxLAN
   - Rename the addon to [script.service.lifxkodi](https://kodi.wiki/view/Add-on_structure#Directory_Name)
+  - Translations for settings
 
 
 ## Support
