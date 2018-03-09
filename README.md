@@ -68,21 +68,14 @@ This [Kodi](https://kodi.tv/) add-on controls [Lifx](http://www.lifx.com/) light
 [![Kodi + Philips hue](http://img.youtube.com/vi/i3bzet-EbWc/default.jpg)](http://www.youtube.com/watch?v=i3bzet-EbWc "Kodi + Philips hue")
 [![Kodi with Hue ambilight](http://img.youtube.com/vi/_t4RpS4Dwag/default.jpg)](http://www.youtube.com/watch?v=_t4RpS4Dwag "Kodi + Philips hue")
 
-## [Screenshots](http://imgur.com/gallery/V9Dxh)
-### As of Aug 28, 2016
-#### Addon Information
-[![Addon Information](http://i.imgur.com/9eVRc8Nm.jpg)](http://i.imgur.com/9eVRc8N.jpg)
+## Screenshots
+### [v1.0.0 (Mar 09, 2018)](https://imgur.com/gallery/lomzL)
 
-#### Addon Settings
-[![Addon Settings - Main](http://i.imgur.com/3kpdmqVt.jpg)](http://i.imgur.com/3kpdmqV.jpg)
-[![Addon Settings - Theater - 1](http://i.imgur.com/BmbPCR3t.jpg)](http://i.imgur.com/BmbPCR3.jpg)
-[![Addon Settings - Theater - 2](http://i.imgur.com/K1Yr0nXt.jpg)](http://i.imgur.com/K1Yr0nX.jpg)
-[![Addon Settings - Ambilight - 1](http://i.imgur.com/cL2EGTYt.jpg)](http://i.imgur.com/cL2EGTY.jpg)
-[![Addon Settings - Ambilight - 2](http://i.imgur.com/S5yRWxlt.jpg)](http://i.imgur.com/S5yRWxl.jpg)
-[![Addon Settings - Advance](http://i.imgur.com/wcawBM0t.jpg)](http://i.imgur.com/wcawBM0.jpg)
 
 
 ## Installation
+
+[![Installation](https://i.imgur.com/zBTnlvo.gif)](https://i.imgur.com/zBTnlvo.gif)
 
 - Download the add-on as a ZIP file from the top of this page
   - (Click on the green "Clone or download button" then click on the "Download ZIP" link)
@@ -92,6 +85,11 @@ This [Kodi](https://kodi.tv/) add-on controls [Lifx](http://www.lifx.com/) light
 - Restart Kodi and configure the add-on:
   - System -> Settings -> Add-ons -> Enabled add-ons -> Services -> Lifx Ambilight
   - Configure available settings.
+
+
+## Configurations
+
+[![Configurations](https://i.imgur.com/1tZhC9G.gif)](https://i.imgur.com/1tZhC9G.gif)
 
 ## Example Use Case
 I have 7 Lifx lights - `TV Left`, `TV Right`, `Ceiling 1`, `Ceiling 2`, `Kitchen 1`, `Kitchen 2`, `Hallway`.
@@ -109,6 +107,11 @@ For this, you can configure the addon settings as the following
   - Click ok to save the settings.
 
 
+## Changelog
+
+- [Link](https://github.com/sanghviharshit/script.kodi.lifx.ambilight/blob/develop/changelog.txt
+)
+
 ## Known Issues
 
 **Raspberry Pi users:**
@@ -117,6 +120,9 @@ Ambilight mode doesn't work on a Raspberry Pi due to the way it renders video
 
 **ARM based devices/Nexus Player/Any other Android devices:**
   - Try disabling Mediacodec (Surface) in Settings > Video> Acceleration. This seems to fix the problem. [Reference](https://github.com/michaelrcarroll/script.kodi.hue.ambilight/issues/30)
+
+**AppleTV 4K:**
+  - Ambilight mode doesn't properly work with 4k-HD codecs (>1080p) when "hardware acceleration AVFoundation" is enabled.
 
 **Nvidia Shield / most Android boxes:**
   - Ambilight mode doesn't properly work with 4k-HD codecs (>1080p) when "allow hardware acceleration - Mediacodec (Surface)" is enabled.
@@ -127,7 +133,7 @@ Ambilight mode doesn't work on a Raspberry Pi due to the way it renders video
 ## Todo:
   - Credits undimming was removed, will be reimplemented when the state checking gets more robust
   - Add tests
-  - Theatre sunset/sunrise
+  - Theater sunset/sunrise
   - Force lights `on` based on time of day
   - Lifx Z Multi-zone support
   - Update screenshots
@@ -151,7 +157,6 @@ Ambilight mode doesn't work on a Raspberry Pi due to the way it renders video
 
 - [@mclarkk](https://github.com/mclarkk) for creating [lifxlan](https://github.com/mclarkk/lifxlan/) - a Python library for accessing LIFX devices locally using the official LIFX LAN protocol.
 - [@mpolednik](https://github.com/mpolednik), [@michaelrcarroll](https://github.com/michaelrcarroll) and others for maintaining [script.kodi.hue.ambilight](https://github.com/mpolednik/script.kodi.hue.ambilight), originally started by [@cees-elzinga](https://github.com/mclarkk/cees-elzinga)
-
 
 
 ## Pingbacks
