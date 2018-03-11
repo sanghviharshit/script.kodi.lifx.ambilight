@@ -19,7 +19,7 @@ class ClientInfo(object):
 
     @staticmethod
     def get_addon_id():
-        return "script.kodi.lifx.ambilight"
+        return xbmcaddon.Addon().getAddonInfo('id')
 
     def get_addon_name(self):
         # Used for logging

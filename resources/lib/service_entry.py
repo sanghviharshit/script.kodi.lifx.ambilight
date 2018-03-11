@@ -52,6 +52,7 @@ class Service(object):
         xbmclog("KODI Version: {}".format(xbmc.getInfoLabel('System.BuildVersion')))
         xbmclog("{} Version: {}".format(self.addon_name, self.client_info.get_version()))
 
+        self.ga = GoogleAnalytics()
         self.connected = False
 
     def service_entry_point(self, args):
@@ -66,10 +67,10 @@ class Service(object):
                 params)
             )
 
-        if not Service.startup:
-            Service.startup = self._startup()
-
         if params == {}:
+            if not self.startup:
+                self.startup = self._startup()
+
             if self.player is None:
                 xbmclog('Could not instantiate player')
                 return
@@ -77,7 +78,6 @@ class Service(object):
             self.run()
             # Kodi requested abort
             self.shutdown()
-
         elif params['action'] == "discover":
             self.ga.sendEventData("Configurations", "Discover")
             ui.discover_hue_bridge(self)
@@ -88,19 +88,19 @@ class Service(object):
         elif params['action'] == "setup_theater_lights":
             self.ga.sendEventData("Configurations", "Setup Group", "Ambilight")
             xbmc.executebuiltin('NotifyAll({}, {})'.format(
-                __addon__.getAddonInfo('id'), 'start_setup_theater_lights'))
+                clientinfo.ClientInfo().get_addon_id(), 'start_setup_theater_lights'))
         elif params['action'] == "setup_theater_subgroup":
             self.ga.sendEventData("Configurations", "Setup Group", "Theater")
             xbmc.executebuiltin('NotifyAll({}, {})'.format(
-                __addon__.getAddonInfo('id'), 'start_setup_theater_subgroup'))
+                clientinfo.ClientInfo().get_addon_id(), 'start_setup_theater_subgroup'))
         elif params['action'] == "setup_ambilight_lights":
             self.ga.sendEventData("Configurations", "Setup Group", "Theater Subgroup")
             xbmc.executebuiltin('NotifyAll({}, {})'.format(
-                __addon__.getAddonInfo('id'), 'start_setup_ambilight_lights'))
+                clientinfo.ClientInfo().get_addon_id(), 'start_setup_ambilight_lights'))
         elif params['action'] == "setup_static_lights":
             self.ga.sendEventData("Configurations", "Setup Group", "Static")
             xbmc.executebuiltin('NotifyAll({}, {})'.format(
-                __addon__.getAddonInfo('id'), 'start_setup_static_lights'))
+                clientinfo.ClientInfo().get_addon_id(), 'start_setup_static_lights'))
         else:
             # not yet implemented
             pass
@@ -115,7 +115,6 @@ class Service(object):
         self.player = player.Player()
         self.player.hue_service = self
 
-        self.ga = GoogleAnalytics()
         self.ga.sendEventData("Application", "Startup")
 
         try:

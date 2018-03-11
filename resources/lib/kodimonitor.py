@@ -1,6 +1,8 @@
 import xbmc
 
 import ui
+import clientinfo
+
 from tools import xbmclog
 
 
@@ -9,7 +11,7 @@ class KodiMonitor(xbmc.Monitor):
     def __init__(self):
         xbmclog('In KodiMonitor.__init__()')
         xbmc.Monitor.__init__(self)
-
+        
     def onSettingsChanged(self):
         self.hue_service.settings.readxml()
         xbmclog('In onSettingsChanged() {}'.format(self.hue_service.settings))
@@ -18,7 +20,7 @@ class KodiMonitor(xbmc.Monitor):
     def onNotification(self, sender, method, data):
         xbmclog('In onNotification(sender={}, method={}, data={})'
                 .format(sender, method, data))
-        if sender == __addon__.getAddonInfo('id'):
+        if sender == clientinfo.ClientInfo().get_addon_id():
             if method == 'Other.start_setup_theater_lights':
                 ret = ui.multiselect_lights(
                     self.hue_service.settings.bridge_ip,
