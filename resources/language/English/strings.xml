@@ -107,4 +107,6 @@
     <string id="5120">Disable for short movies</string>
     <string id="5130">Short Movie Threshold (seconds)</string>
     <string id="5140">Force Light(s) on (even if off)</string>
+    <string id="5160">Report Metrics</string>
+
 </strings>
