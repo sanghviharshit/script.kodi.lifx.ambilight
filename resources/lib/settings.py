@@ -86,6 +86,7 @@ class Settings():
         self.misc_disableshort = __addon__.getSetting("misc_disableshort") == "true"
         self.misc_disableshort_threshold = int(__addon__.getSetting("misc_disableshort_threshold"))
         self.force_light_on = __addon__.getSetting("force_light_on") == "true"
+        self.metric_logging = __addon__.getSetting("metric_logging") == "true"
 
         if self.ambilight_min > self.ambilight_max:
             self.update(ambilight_min=self.ambilight_max)

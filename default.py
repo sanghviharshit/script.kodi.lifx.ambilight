@@ -18,6 +18,8 @@ from tools import get_version, xbmclog
 from ambilight_controller import AmbilightController
 from theater_controller import TheaterController
 from static_controller import StaticController
+from ga_client import GoogleAnalytics
+
 import bridge
 import ui
 import algorithm
@@ -32,6 +34,9 @@ fmt = capture.getImageFormat()
 # BGRA or RGBA
 fmtRGBA = fmt == 'RGBA'
 
+ga = None
+monitor = None
+settings = None
 
 class MyMonitor(xbmc.Monitor):
 
@@ -111,16 +116,19 @@ class MyPlayer(xbmc.Player):
         self.playlistpos = playlist.getposition()
         self.playingvideo = True
         self.duration = self.getTotalTime()
+        ga.sendEventData("Video", "Playback", "Started")
         state_changed("started", self.duration)
 
     def onPlayBackPaused(self):
         xbmclog('In MyPlayer.onPlayBackPaused()')
+        ga.sendEventData("Video", "Playback", "Paused")
         state_changed("paused", self.duration)
         if self.isPlayingVideo():
             self.playingvideo = False
 
     def onPlayBackResumed(self):
         xbmclog('In MyPlayer.onPlayBackResume()')
+        ga.sendEventData("Video", "Playback", "Resumed")
         state_changed("resumed", self.duration)
         if self.isPlayingVideo():
             self.playingvideo = True
@@ -129,6 +137,7 @@ class MyPlayer(xbmc.Player):
 
     def onPlayBackStopped(self):
         xbmclog('In MyPlayer.onPlayBackStopped()')
+        ga.sendEventData("Video", "Playback", "Stopped")
         state_changed("stopped", self.duration)
         self.playingvideo = False
         self.playlistlen = 0
@@ -140,6 +149,7 @@ class MyPlayer(xbmc.Player):
             return
 
         self.playingvideo = False
+        ga.sendEventData("Video", "Playback", "Ended")
         state_changed("stopped", self.duration)
 
 
@@ -151,6 +161,7 @@ class Hue:
     def __init__(self, settings, args):
         self.settings = settings
         self.connected = False
+
 
         try:
             params = dict(arg.split("=") for arg in args.split("&"))
@@ -164,6 +175,7 @@ class Hue:
             )
 
         if params == {}:
+            ga.sendEventData("Application", "Startup")
             # if there's a bridge IP, try to talk to it.
             if self.settings.bridge_ip not in ["-", "", None]:
                 result = bridge.user_exists(
@@ -171,23 +183,35 @@ class Hue:
                     self.settings.bridge_user
                 )
                 if result:
+                    try:
+                        ga.sendEventData("Version", "OS", platform.platform())
+                        ga.sendEventData("Version", "Python", platform.python_version())
+                    except Exception:
+                        pass
+
                     self.connected = True
                     self.update_controllers()
         elif params['action'] == "discover":
+            ga.sendEventData("Configurations", "Discover")
             ui.discover_hue_bridge(self)
             self.update_controllers()
         elif params['action'] == "reset_settings":
+            ga.sendEventData("Configurations", "Reset")
             os.unlink(os.path.join(__addondir__, "settings.xml"))
         elif params['action'] == "setup_theater_lights":
+            ga.sendEventData("Configurations", "Setup Group", "Theater")
             xbmc.executebuiltin('NotifyAll({}, {})'.format(
                 __addon__.getAddonInfo('id'), 'start_setup_theater_lights'))
         elif params['action'] == "setup_theater_subgroup":
+            ga.sendEventData("Configurations", "Setup Group", "Theater Subgroup")
             xbmc.executebuiltin('NotifyAll({}, {})'.format(
                 __addon__.getAddonInfo('id'), 'start_setup_theater_subgroup'))
         elif params['action'] == "setup_ambilight_lights":
+            ga.sendEventData("Configurations", "Setup Group", "Ambilight")
             xbmc.executebuiltin('NotifyAll({}, {})'.format(
                 __addon__.getAddonInfo('id'), 'start_setup_ambilight_lights'))
         elif params['action'] == "setup_static_lights":
+            ga.sendEventData("Configurations", "Setup Group", "Static")
             xbmc.executebuiltin('NotifyAll({}, {})'.format(
                 __addon__.getAddonInfo('id'), 'start_setup_static_lights'))
         else:
@@ -236,12 +260,14 @@ class Hue:
 
 
 def run():
+    global monitor
+
     player = MyPlayer()
     if player is None:
         xbmclog('In run() could not instantiate player')
         return
 
-    while not monitor.abortRequested():
+    while monitor and not monitor.abortRequested():
         if len(hue.ambilight_controller.lights) and not ev.is_set():
             startReadOut = False
             vals = {}
@@ -271,6 +297,7 @@ def run():
             xbmclog('In run() deleting player')
             del player  # might help with slow exit.
 
+    ga.sendEventData("Application", "Shutdown")
 
 def state_changed(state, duration):
     xbmclog('In state_changed(state={}, duration={})'.format(
@@ -316,13 +343,30 @@ def state_changed(state, duration):
 if (__name__ == "__main__"):
     settings = Settings()
     monitor = MyMonitor(settings)
+    ga = GoogleAnalytics(settings.metric_logging)
 
     xbmclog("In main() - Settings - {}".format(settings))
 
     args = None
     if len(sys.argv) == 2:
         args = sys.argv[1]
+
     hue = Hue(settings, args)
     while not hue.connected and not monitor.abortRequested():
         time.sleep(1)
     run()
+
+    # try:
+    #     hue = Hue(settings, args)
+    #     while not hue.connected and not monitor.abortRequested():
+    #         time.sleep(1)
+    #     run()
+    # except Exception as error:
+    #     if not (hasattr(error, 'quiet') and error.quiet):
+    #         errStrings = ga.formatException()
+    #         ga.sendEventData("Exception", errStrings[0], errStrings[1])
+    #     # log.exception(error)
+    #     # log.info("Forcing shutdown")
+    #     xbmclog(error)
+
+    xbmclog("======== STOPPED ========")

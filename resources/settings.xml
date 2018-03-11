@@ -136,5 +136,7 @@
         <setting id="misc_disableshort" type="bool" label="5120" default="false" />
         <setting id="misc_disableshort_threshold" type="number" label="5130" default="120" enable="eq(-1,true)" />
         <setting id="force_light_on" type="bool" label="5140" default="false" />
+        <setting id="metric_logging" type="bool" label="5160" default="true" />
+
     </category>
 </settings>
