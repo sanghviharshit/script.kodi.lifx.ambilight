@@ -52,7 +52,6 @@ class Service(object):
         xbmclog("KODI Version: {}".format(xbmc.getInfoLabel('System.BuildVersion')))
         xbmclog("{} Version: {}".format(self.addon_name, self.client_info.get_version()))
 
-        self.ga = GoogleAnalytics()
         self.connected = False
 
     def service_entry_point(self, args):
@@ -78,29 +77,6 @@ class Service(object):
             self.run()
             # Kodi requested abort
             self.shutdown()
-        elif params['action'] == "discover":
-            self.ga.sendEventData("Configurations", "Discover")
-            ui.discover_hue_bridge(self)
-            self.update_controllers()
-        elif params['action'] == "reset_settings":
-            self.ga.sendEventData("Configurations", "Reset")
-            os.unlink(os.path.join(__addondir__, "settings.xml"))
-        elif params['action'] == "setup_theater_lights":
-            self.ga.sendEventData("Configurations", "Setup Group", "Ambilight")
-            xbmc.executebuiltin('NotifyAll({}, {})'.format(
-                clientinfo.ClientInfo().get_addon_id(), 'start_setup_theater_lights'))
-        elif params['action'] == "setup_theater_subgroup":
-            self.ga.sendEventData("Configurations", "Setup Group", "Theater")
-            xbmc.executebuiltin('NotifyAll({}, {})'.format(
-                clientinfo.ClientInfo().get_addon_id(), 'start_setup_theater_subgroup'))
-        elif params['action'] == "setup_ambilight_lights":
-            self.ga.sendEventData("Configurations", "Setup Group", "Theater Subgroup")
-            xbmc.executebuiltin('NotifyAll({}, {})'.format(
-                clientinfo.ClientInfo().get_addon_id(), 'start_setup_ambilight_lights'))
-        elif params['action'] == "setup_static_lights":
-            self.ga.sendEventData("Configurations", "Setup Group", "Static")
-            xbmc.executebuiltin('NotifyAll({}, {})'.format(
-                clientinfo.ClientInfo().get_addon_id(), 'start_setup_static_lights'))
         else:
             # not yet implemented
             pass
@@ -110,6 +86,8 @@ class Service(object):
         self.settings = Settings()
         # Important: Threads depending on abortRequest will not trigger
         # if profile switch happens more than once.
+        self.ga = GoogleAnalytics()
+        
         self.monitor = kodimonitor.KodiMonitor()
         self.monitor.hue_service = self
         self.player = player.Player()

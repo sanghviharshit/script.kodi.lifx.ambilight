@@ -4,13 +4,13 @@
         <!-- Main SECTION -->
         <setting type="lsep" label="1000" />
         <setting id="connected" label="1001" type="bool" enable="false" visible="false" default="true" />
-        <setting id="discover_bridge" type="action" label="1210" action="RunScript(script.kodi.lifx.ambilight,action=discover)" />
+        <setting id="discover_bridge" type="action" label="1210" action="NotifyAll(script.kodi.lifx.ambilight, discover)" />
 
         <!-- Grouping -->
         <setting type="lsep" label="1100" />
-        <setting id="setup_theater_lights" type="action" enable="true" label="1120" action="RunScript(script.kodi.lifx.ambilight,action=setup_theater_lights)" />
-        <setting id="setup_ambilight_lights" type="action" enable="true" label="1130" action="RunScript(script.kodi.lifx.ambilight,action=setup_ambilight_lights)" />
-        <setting id="setup_static_lights" type="action" enable="true" label="1140" action="RunScript(script.kodi.lifx.ambilight,action=setup_static_lights)" />
+        <setting id="setup_theater_lights" type="action" enable="true" label="1120" action="NotifyAll(script.kodi.lifx.ambilight, start_setup_theater_lights)" />
+        <setting id="setup_ambilight_lights" type="action" enable="true" label="1130" action="NotifyAll(script.kodi.lifx.ambilight, start_setup_ambilight_lights)" />
+        <setting id="setup_static_lights" type="action" enable="true" label="1140" action="NotifyAll(script.kodi.lifx.ambilight, start_setup_static_lights)" />
         <!-- Bridge -->
         <!-- <setting type="lsep" label="1200" /> -->
         <setting id="bridge_ip" type="text" label="1220" enable="true" visible="false" default="127.0.0.1" />
@@ -22,7 +22,7 @@
         <setting id="static_group" label="1300" type="text" visible="false" default="" />
         <!-- Reset -->
         <setting type="lsep" label="1400" />
-        <setting id="reset_settings" type="action" label="1410" action="RunScript(script.kodi.lifx.ambilight,action=reset_settings)" option="close" />
+        <setting id="reset_settings" type="action" label="1410" action="NotifyAll(script.kodi.lifx.ambilight, reset_settings)" option="close" />
     </category>
 
     <category label="2000">
@@ -31,7 +31,7 @@
 
         <!-- Global -->
         <setting type="lsep" label="2100" />
-        <setting id="setup_theater_subgroup" type="action" label="2105" action="RunScript(script.kodi.lifx.ambilight,action=setup_theater_subgroup)" />
+        <setting id="setup_theater_subgroup" type="action" label="2105" action="NotifyAll(script.kodi.lifx.ambilight, start_setup_theater_subgroup)" />
         <setting id="dim_time" label="2110" type="slider" default="4" range="0,0.5,10" option="float" />
         <setting id="proportional_dim_time" label="2120" type="bool" default="true" />
         <setting id="propritional_explainer" type="lsep" label="2130" visible="eq(-1,true)" subsetting="true" />
