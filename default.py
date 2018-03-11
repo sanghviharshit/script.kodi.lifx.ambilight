@@ -351,22 +351,17 @@ if (__name__ == "__main__"):
     if len(sys.argv) == 2:
         args = sys.argv[1]
 
-    hue = Hue(settings, args)
-    while not hue.connected and not monitor.abortRequested():
-        time.sleep(1)
-    run()
-
-    # try:
-    #     hue = Hue(settings, args)
-    #     while not hue.connected and not monitor.abortRequested():
-    #         time.sleep(1)
-    #     run()
-    # except Exception as error:
-    #     if not (hasattr(error, 'quiet') and error.quiet):
-    #         errStrings = ga.formatException()
-    #         ga.sendEventData("Exception", errStrings[0], errStrings[1])
-    #     # log.exception(error)
-    #     # log.info("Forcing shutdown")
-    #     xbmclog(error)
+    try:
+        hue = Hue(settings, args)
+        while not hue.connected and not monitor.abortRequested():
+            time.sleep(1)
+        run()
+    except Exception as error:
+        if not (hasattr(error, 'quiet') and error.quiet):
+            errStrings = ga.formatException()
+            ga.sendEventData("Exception", errStrings[0], errStrings[1])
+        # log.exception(error)
+        # log.info("Forcing shutdown")
+        xbmclog(error)
 
     xbmclog("======== STOPPED ========")
