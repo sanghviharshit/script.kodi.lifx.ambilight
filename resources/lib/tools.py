@@ -30,16 +30,16 @@ def notify(title, msg=''):
         xbmc.executebuiltin('XBMC.Notification({}, {}, 3, {})'.format(
             title, msg, __icon__))
 
-
-def get_version():
-    # prob not the best way...
-    global __xml__
-    try:
-        for line in open(__xml__):
-            if line.find("ambilight") != -1 and line.find("version") != -1:
-                return line[line.find("version=")+9:line.find(" provider")-1]
-    except:
-        return "unknown"
+def configs(config, value=None):
+    # Get or add addon setting
+    global __addon__
+    if value is not None:
+        __addon__.setSetting(config, value)
+        xbmclog("Setting {}={}".format(config, value))
+    else: # returns unicode object
+        value = __addon__.getSetting(config)
+        xbmclog("getSetting({})={}".format(config, value))
+        return value
 
 pDialog = None
 

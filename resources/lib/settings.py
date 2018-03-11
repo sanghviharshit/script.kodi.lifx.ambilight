@@ -90,6 +90,9 @@ class Settings():
         if self.ambilight_min > self.ambilight_max:
             self.update(ambilight_min=self.ambilight_max)
 
+        self.startup_delay = int(__addon__.getSetting("startup_delay").split(".")[0])
+        self.metric_logging = __addon__.getSetting("metric_logging") == "true"
+
     def update(self, **kwargs):
         self.__dict__.update(**kwargs)
         for k, v in kwargs.iteritems():
