@@ -42,7 +42,7 @@ This [Kodi](https://kodi.tv/) add-on controls [Lifx](http://www.lifx.com/) light
   - `Ambilight`
     - Option to `Dim` the lights when Movie starts playing
     - Option to change `minimum` and `maximum` brightness
-    - Option to configure threshold (minimum) values for brightness and saturation when calculating the color/brighness from picture frame.
+    - Option to configure threshold (minimum) values for brightness and saturation when calculating the color/brightness from picture frame.
     - Option to set different colors for different lights or same color for all lights
     - Option to configure bias value (lower the bias - more variety of colors, higher the bias - less variety of colors, but higher accuracy)
   - `Static`
@@ -125,7 +125,7 @@ Ambilight mode doesn't work on a Raspberry Pi due to the way it renders video
   - Add tests
   - Theatre sunset/sunrise
   - Force lights `on` based on time of day
-  - Lifx Z Multizone support
+  - Lifx Z Multi-zone support
   - Update screenshots
   - Update Demo video
   - Add better descriptions for each settings for more use cases
@@ -133,7 +133,8 @@ Ambilight mode doesn't work on a Raspberry Pi due to the way it renders video
   - IFTTT integration
   - Home assistant integration ?
   - Maintain kodi branch of sanghviharshit/lifxlan repository
-  -
+  - Add settings for broadcast IP address for LifxLAN discovery, since we are not using netifaces module from LifxLAN
+  - Rename the addon to [script.service.lifxkodi](https://kodi.wiki/view/Add-on_structure#Directory_Name)
 
 
 ## Support
