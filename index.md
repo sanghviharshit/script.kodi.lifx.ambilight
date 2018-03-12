@@ -2,15 +2,6 @@
 
 A [Kodi](https://kodi.tv/) add-on for your [Lifx](http://www.lifx.com/) lights.
 
-[![Say Thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/sanghviharshit)
-
-## Compatibility
-|Kodi v16|Kodi v17+|
-|--------|---------|
-|Release v0.1.3|Branch "develop"|
-|[download](https://github.com/sanghviharshit/script.kodi.lifx.ambilight/archive/0.1.3.zip)|[download](https://github.com/sanghviharshit/script.kodi.lifx.ambilight/archive/develop.zip)|
-
-
 ## Description
 
 This [Kodi](https://kodi.tv/) add-on controls [Lifx](http://www.lifx.com/) lights based on the following light groups, fully configurable using the setup wizard from addon settings.
