@@ -1,5 +1,15 @@
+1.0.0 (2018-03-08)
+- All new version with lots of new features and stability
+- Ported latest code (much better organized) from mpolednik/script.kodi.hue.ambilight with lots of new features (e.g. setup wizard for light groups)
+- Improved algorithm for calculating color and brightness from picture frame for Ambilight
+- Updated to the latest Lifxlan module
+- New settings (including color_variation flag for multiple lights)
+- Better logging
+- Improved performance
+- Kodi v17+ only
+
 0.1.3 (2018-03-02)
-- better exception handling when light state udate fails
+- better exception handling when light state update fails
 
 0.1.2 (2017-09-28)
 - Updated LifxLAN version

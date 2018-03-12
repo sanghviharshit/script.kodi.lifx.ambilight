@@ -1,98 +1,102 @@
 import sys
+
 import xbmcaddon
 
-__addon__      = sys.modules[ "__main__" ].__addon__
+__addon__ = sys.modules["__main__"].__addon__
 
-class MySettings():
-  def __init__( self, *args, **kwargs ):
-    self.readxml()
-    self.addon = xbmcaddon.Addon()
 
-  def readxml(self):
-    #self.bridge_ip             = __addon__.getSetting("bridge_ip")
-    #self.bridge_user           = __addon__.getSetting("bridge_user")
+class Settings():
+    def __init__(self, *args, **kwargs):
+        self.readxml()
 
-    self.mode                  = int(__addon__.getSetting("mode"))
-    self.light                 = int(__addon__.getSetting("light"))
-    self.group_id              = __addon__.getSetting("group_id")
-    self.misc_initialflash     = __addon__.getSetting("misc_initialflash") == "true"
-    self.misc_disableshort     = __addon__.getSetting("misc_disableshort") == "true"
-    self.misc_disableshort_threshold = int(__addon__.getSetting("misc_disableshort_threshold"))
+    def readxml(self):
+        global __addon__
+        __addon__ = xbmcaddon.Addon()
 
-    self.dimmed_bri            = int(int(__addon__.getSetting("dimmed_bri").split(".")[0])*254/100)
-    self.override_undim_bri    = __addon__.getSetting("override_undim_bri") == "true"
-    self.undim_bri             = int(int(__addon__.getSetting("undim_bri").split(".")[0])*254/100)
-    self.override_paused       = __addon__.getSetting("override_paused") == "true"
-    self.paused_bri            = int(int(__addon__.getSetting("paused_bri").split(".")[0])*254/100)
-    self.dim_time              = int(float(__addon__.getSetting("dim_time"))*10)
-    self.proportional_dim_time = __addon__.getSetting("proportional_dim_time") == "true"
-    self.override_hue          = __addon__.getSetting("override_hue") == "true"
-    self.dimmed_hue            = int(__addon__.getSetting("dimmed_hue").split(".")[0])
-    self.undim_hue             = int(__addon__.getSetting("undim_hue").split(".")[0])
-    self.override_sat          = __addon__.getSetting("override_sat") == "true"
-    self.dimmed_sat            = int(__addon__.getSetting("dimmed_sat").split(".")[0])
-    self.undim_sat             = int(__addon__.getSetting("undim_sat").split(".")[0])
+        self.bridge_ip = __addon__.getSetting("bridge_ip")
+        self.bridge_user = __addon__.getSetting("bridge_user")
 
-    self.override_kel = __addon__.getSetting("override_kel") == "true"
-    self.dimmed_kel = int(__addon__.getSetting("dimmed_kel").split(".")[0])
-    self.undim_kel = int(__addon__.getSetting("undim_kel").split(".")[0])
+        self.connected = __addon__.getSetting("connected") == "true"
+        self.ambilight_group = __addon__.getSetting("ambilight_group")
+        self.theater_group = __addon__.getSetting("theater_group")
+        self.theater_subgroup = __addon__.getSetting("theater_subgroup")
+        self.static_group = __addon__.getSetting("static_group")
 
-    self.undim_during_credits  = __addon__.getSetting("undim_during_credits") == "true"
-    self.credits_delay_time    = int(__addon__.getSetting("credits_delay_time").split(".")[0])
-    self.ambilight_dim         = __addon__.getSetting("ambilight_dim") == "true"
-    self.ambilight_dim_light   = int(__addon__.getSetting("ambilight_dim_light"))
-    self.ambilight_dim_group_id = __addon__.getSetting("ambilight_dim_group_id")
-    self.ambilight_old_algorithm = __addon__.getSetting("ambilight_old_algorithm") == "true"
-    self.ambilight_min         = int(int(__addon__.getSetting("ambilight_min").split(".")[0])*254/100)
-    self.ambilight_max         = int(int(__addon__.getSetting("ambilight_max").split(".")[0])*254/100)
-    self.ambilight_threshold_value = int(int(__addon__.getSetting("ambilight_threshold_value").split(".")[0])*254/100)
-    self.ambilight_threshold_saturation = int(int(__addon__.getSetting("ambilight_threshold_saturation").split(".")[0])*254/100)
-    self.color_variation = int(__addon__.getSetting("color_variation"))
-    self.color_bias            = int(int(__addon__.getSetting("color_bias").split(".")[0])/3*3)
-    self.force_light_on        = __addon__.getSetting("force_light_on") == "true"
-    self.force_light_group_start_override = __addon__.getSetting("force_light_group_start_override") == "true"
+        self.dim_time = int(float(__addon__.getSetting("dim_time"))*10)
+        self.proportional_dim_time = __addon__.getSetting("proportional_dim_time") == "true"
 
-    if self.ambilight_min > self.ambilight_max:
-        self.ambilight_min = self.ambilight_max
-        __addon__.setSetting("ambilight_min", __addon__.getSetting("ambilight_max"))
+        self.theater_start_hue_override = __addon__.getSetting("theater_start_hue_override") == "true"
+        self.theater_start_hue = int(__addon__.getSetting("theater_start_hue").split(".")[0])
+        self.theater_start_sat_override = __addon__.getSetting("theater_start_sat_override") == "true"
+        self.theater_start_sat = int(__addon__.getSetting("theater_start_sat").split(".")[0])
+        self.theater_start_bri_override = __addon__.getSetting("theater_start_bri_override") == "true"
+        self.theater_start_bri = int(__addon__.getSetting("theater_start_bri").split(".")[0])
+        self.theater_start_kel_override = __addon__.getSetting("theater_start_kel_override") == "true"
+        self.theater_start_kel = int(__addon__.getSetting("theater_start_kel").split(".")[0])
 
-    self.debug                 = __addon__.getSetting("debug") == "true"
+        self.theater_pause_dim_subgroup = __addon__.getSetting("theater_pause_dim_subgroup") == "true"
+        self.theater_pause_hue_override = __addon__.getSetting("theater_pause_hue_override") == "true"
+        self.theater_pause_hue = int(__addon__.getSetting("theater_pause_hue").split(".")[0])
+        self.theater_pause_sat_override = __addon__.getSetting("theater_pause_sat_override") == "true"
+        self.theater_pause_sat = int(__addon__.getSetting("theater_pause_sat").split(".")[0])
+        self.theater_pause_bri_override = __addon__.getSetting("theater_pause_bri_override") == "true"
+        self.theater_pause_bri = int(__addon__.getSetting("theater_pause_bri").split(".")[0])
+        self.theater_pause_kel_override = __addon__.getSetting("theater_pause_kel_override") == "true"
+        self.theater_pause_kel = int(__addon__.getSetting("theater_pause_kel").split(".")[0])
 
-  def update(self, **kwargs):
-    self.__dict__.update(**kwargs)
-    for k, v in kwargs.iteritems():
-      self.addon.setSetting(k, v)
+        self.theater_stop_hue_override = __addon__.getSetting("theater_stop_hue_override") == "true"
+        self.theater_stop_hue = int(__addon__.getSetting("theater_stop_hue").split(".")[0])
+        self.theater_stop_sat_override = __addon__.getSetting("theater_stop_sat_override") == "true"
+        self.theater_stop_sat = int(__addon__.getSetting("theater_stop_sat").split(".")[0])
+        self.theater_stop_bri_override = __addon__.getSetting("theater_stop_bri_override") == "true"
+        self.theater_stop_bri = int(__addon__.getSetting("theater_stop_bri").split(".")[0])
+        self.theater_stop_kel_override = __addon__.getSetting("theater_stop_kel_override") == "true"
+        self.theater_stop_kel = int(__addon__.getSetting("theater_stop_kel").split(".")[0])
 
-  def __repr__(self):
-    return 'mode: %s\n' % str(self.mode) + \
-    'light: %s\n' % str(self.light) + \
-    'group_id: %s\n' % self.group_id + \
-    'misc_initialflash: %s\n' % str(self.misc_initialflash) + \
-    'misc_disableshort: %s\n' % str(self.misc_disableshort) + \
-    'misc_disableshort_threshold: %s\n' % str(self.misc_disableshort_threshold) + \
-    'dimmed_bri: %s\n' % str(self.dimmed_bri) + \
-    'undim_bri: %s\n' % str(self.undim_bri) + \
-    'override_paused: %s\n' % str(self.override_paused) + \
-    'paused_bri: %s\n' % str(self.paused_bri) + \
-    'dimmed_hue: %s\n' % str(self.dimmed_hue) + \
-    'override_hue: %s\n' % str(self.override_hue) + \
-    'undim_hue: %s\n' % str(self.undim_hue) + \
-    'dimmed_sat: %s\n' % str(self.dimmed_sat) + \
-    'override_sat: %s\n' % str(self.override_sat) + \
-    'undim_sat: %s\n' % str(self.undim_sat) + \
-    'dimmed_kel: %s\n' % str(self.dimmed_kel) + \
-    'override_kel: %s\n' % str(self.override_kel) + \
-    'undim_kel: %s\n' % str(self.undim_kel) + \
-    'ambilight_dim: %s\n' % str(self.ambilight_dim) + \
-    'ambilight_dim_light: %s\n' % str(self.ambilight_dim_light) + \
-    'ambilight_dim_group_id: %s\n' % str(self.ambilight_dim_group_id) + \
-    'ambilight_old_algorithm: %s\n' % str(self.ambilight_old_algorithm) + \
-    'ambilight_min: %s\n' % str(self.ambilight_min) + \
-    'ambilight_max: %s\n' % str(self.ambilight_max) + \
-    'ambilight_threshold_value: %s\n' % str(self.ambilight_threshold_value) + \
-    'ambilight_threshold_saturation: %s\n' % str(self.ambilight_threshold_saturation) + \
-    'color_variation: %s\n' % str(self.color_variation) + \
-    'color_bias: %s\n' % str(self.color_bias) + \
-    'force_light_on: %s\n' % str(self.force_light_on) + \
-    'force_light_group_start_override: %s\n' % str(self.force_light_group_start_override) + \
-    'debug: %s\n' % self.debug
+        self.ambilight_min = int(__addon__.getSetting("ambilight_min").split(".")[0])
+        self.ambilight_max = int(__addon__.getSetting("ambilight_max").split(".")[0])
+
+        self.ambilight_threshold_value = int(__addon__.getSetting("ambilight_threshold_value").split(".")[0])
+        self.ambilight_threshold_saturation = int(__addon__.getSetting("ambilight_threshold_saturation").split(".")[0])
+
+        self.color_variation = __addon__.getSetting("color_variation") == "true"
+        self.color_bias = int(__addon__.getSetting("color_bias").split(".")[0])
+
+        self.ambilight_start_dim_enable = __addon__.getSetting("ambilight_start_dim_enable") == "true"
+        self.ambilight_start_dim_override = __addon__.getSetting("ambilight_start_dim_override") == "true"
+        self.ambilight_start_dim = int(__addon__.getSetting("ambilight_start_dim").split(".")[0])
+
+        self.ambilight_pause_bri_override = __addon__.getSetting("ambilight_pause_bri_override") == "true"
+        self.ambilight_pause_bri = int(__addon__.getSetting("ambilight_pause_bri").split(".")[0])
+
+        self.ambilight_stop_bri_override = __addon__.getSetting("ambilight_stop_bri_override") == "true"
+        self.ambilight_stop_bri = int(__addon__.getSetting("ambilight_stop_bri").split(".")[0])
+
+        self.static_start_random = __addon__.getSetting("static_start_random") == "true"
+        self.static_start_hue_override = __addon__.getSetting("static_start_hue_override") == "true"
+        self.static_start_hue = int(__addon__.getSetting("static_start_hue").split(".")[0])
+        self.static_start_sat_override = __addon__.getSetting("static_start_sat_override") == "true"
+        self.static_start_sat = int(__addon__.getSetting("static_start_sat").split(".")[0])
+        self.static_start_bri_override = __addon__.getSetting("static_start_bri_override") == "true"
+        self.static_start_bri = int(__addon__.getSetting("static_start_bri").split(".")[0])
+        self.static_start_kel_override = __addon__.getSetting("static_start_kel_override") == "true"
+        self.static_start_kel = int(__addon__.getSetting("static_start_kel").split(".")[0])
+
+        self.misc_initialflash = __addon__.getSetting("misc_initialflash") == "true"
+        self.misc_disableshort = __addon__.getSetting("misc_disableshort") == "true"
+        self.misc_disableshort_threshold = int(__addon__.getSetting("misc_disableshort_threshold"))
+        self.force_light_on = __addon__.getSetting("force_light_on") == "true"
+        self.startup_delay = int(__addon__.getSetting("startup_delay").split(".")[0])
+        self.metric_logging = __addon__.getSetting("metric_logging") == "true"
+
+        if self.ambilight_min > self.ambilight_max:
+            self.update(ambilight_min=self.ambilight_max)
+
+
+    def update(self, **kwargs):
+        self.__dict__.update(**kwargs)
+        for k, v in kwargs.iteritems():
+            __addon__.setSetting(k, str(v))
+
+    def __repr__(self):
+        return '<Settings\n{}\n>'.format('\n'.join(['{}={}'.format(key, value) for key, value in self.__dict__.items()]))

@@ -252,9 +252,9 @@ class StateLocation(Message):
         super(StateLocation, self).__init__(MSG_IDS[StateLocation], target_addr, source_id, seq_num, ack_requested, response_requested)
 
     def get_payload(self):
-        self.payload_fields.append(("Location ", self.location))
-        self.payload_fields.append(("Label ", self.label))
-        self.payload_fields.append(("Updated At ", self.updated_at))
+        self.payload_fields.append(("Location", self.location))
+        self.payload_fields.append(("Label", self.label))
+        self.payload_fields.append(("Updated At", self.updated_at))
         location = b"".join(little_endian(bitstring.pack("8", b)) for b in self.location)
         label = b"".join(little_endian(bitstring.pack("8", ord(c))) for c in self.label)
         label_padding = b"".join(little_endian(bitstring.pack("8", 0)) for i in range(32-len(self.label)))
@@ -276,9 +276,9 @@ class StateGroup(Message):
         super(StateGroup, self).__init__(MSG_IDS[StateGroup], target_addr, source_id, seq_num, ack_requested, response_requested)
 
     def get_payload(self):
-        self.payload_fields.append(("Group ", self.group))
-        self.payload_fields.append(("Label ", self.label))
-        self.payload_fields.append(("Updated At ", self.updated_at))
+        self.payload_fields.append(("Group", self.group))
+        self.payload_fields.append(("Label", self.label))
+        self.payload_fields.append(("Updated At", self.updated_at))
         group = b"".join(little_endian(bitstring.pack("8", b)) for b in self.group)
         label = b"".join(little_endian(bitstring.pack("8", ord(c))) for c in self.label)
         label_padding = b"".join(little_endian(bitstring.pack("8", 0)) for i in range(32-len(self.label)))
@@ -298,8 +298,8 @@ class EchoRequest(Message):
         super(EchoRequest, self).__init__(MSG_IDS[EchoRequest], target_addr, source_id, seq_num, ack_requested, response_requested)
 
     def get_payload(self):
-        field_len = 64
         self.payload_fields.append(("Byte Array", self.byte_array))
+        field_len = 64
         byte_array = b"".join(little_endian(bitstring.pack("8", b)) for b in self.byte_array)
         byte_array_len = len(byte_array)
         if byte_array_len < field_len:
@@ -337,6 +337,8 @@ class LightSetColor(Message):
         super(LightSetColor, self).__init__(MSG_IDS[LightSetColor], target_addr, source_id, seq_num, ack_requested, response_requested)
 
     def get_payload(self):
+        self.payload_fields.append(("Color", self.color))
+        self.payload_fields.append(("Duration", self.duration))
         reserved_8 = little_endian(bitstring.pack("8", self.reserved))
         color = b"".join(little_endian(bitstring.pack("16", field)) for field in self.color)
         duration = little_endian(bitstring.pack("32", self.duration))
@@ -355,6 +357,12 @@ class LightSetWaveform(Message):
         super(LightSetWaveform, self).__init__(MSG_IDS[LightSetWaveform], target_addr, source_id, seq_num, ack_requested, response_requested)
 
     def get_payload(self):
+        self.payload_fields.append(("Is Transient", self.transient))
+        self.payload_fields.append(("Color", self.color))
+        self.payload_fields.append(("Period", self.period))
+        self.payload_fields.append(("Cycles", self.cycles))
+        self.payload_fields.append(("Duty Cycle", self.duty_cycle))
+        self.payload_fields.append(("Waveform", self.waveform))
         reserved_8 = little_endian(bitstring.pack("8", self.reserved))
         transient = little_endian(bitstring.pack("uint:8", self.transient))
         color = b"".join(little_endian(bitstring.pack("16", field)) for field in self.color)
@@ -404,6 +412,8 @@ class LightSetPower(Message):
         super(LightSetPower, self).__init__(MSG_IDS[LightSetPower], target_addr, source_id, seq_num, ack_requested, response_requested)
 
     def get_payload(self):
+        self.payload_fields.append(("Power Level", self.power_level))
+        self.payload_fields.append(("Duration", self.duration))
         power_level = little_endian(bitstring.pack("16", self.power_level))
         duration = little_endian(bitstring.pack("32", self.duration))
         payload = power_level + duration
@@ -444,6 +454,7 @@ class LightSetInfrared(Message):
         super(LightSetInfrared, self).__init__(MSG_IDS[LightSetInfrared], target_addr, source_id, seq_num, ack_requested, response_requested)
 
     def get_payload(self):
+        self.payload_fields.append(("Infrared Brightness", self.infrared_brightness))
         infrared_brightness = little_endian(bitstring.pack("16", self.infrared_brightness))
         payload = infrared_brightness
         return payload
@@ -455,8 +466,7 @@ class MultiZoneStateMultiZone(Message):
         self.count = payload["count"]
         self.index = payload["index"]
         self.color = payload["color"]
-        super(MultiZoneStateMultiZone, self).__init__(MSG_IDS[MultiZoneStateMultiZone], target_addr, source_id, seq_num,
-                                              ack_requested, response_requested)
+        super(MultiZoneStateMultiZone, self).__init__(MSG_IDS[MultiZoneStateMultiZone], target_addr, source_id, seq_num, ack_requested, response_requested)
 
     def get_payload(self):
         self.payload_fields.append(("Count", self.count))
@@ -474,8 +484,7 @@ class MultiZoneStateZone(Message): #503
         self.count = payload["count"]
         self.index = payload["index"]
         self.color = payload["color"]
-        super(MultiZoneStateZone, self).__init__(MSG_IDS[MultiZoneStateZone], target_addr, source_id, seq_num, ack_requested,
-                                         response_requested)
+        super(MultiZoneStateZone, self).__init__(MSG_IDS[MultiZoneStateZone], target_addr, source_id, seq_num, ack_requested, response_requested)
 
     def get_payload(self):
         self.payload_fields.append(("Count", self.count))
@@ -498,6 +507,11 @@ class MultiZoneSetColorZones(Message):
         super(MultiZoneSetColorZones, self).__init__(MSG_IDS[MultiZoneSetColorZones], target_addr, source_id, seq_num, ack_requested, response_requested)
 
     def get_payload(self):
+        self.payload_fields.append(("Start Index", self.start_index))
+        self.payload_fields.append(("End Index", self.end_index))
+        self.payload_fields.append(("Color", self.color))
+        self.payload_fields.append(("Duration", self.duration))
+        self.payload_fields.append(("Apply", self.apply))
         start_index = little_endian(bitstring.pack("8", self.start_index))
         end_index = little_endian(bitstring.pack("8", self.end_index))
         color = b"".join(little_endian(bitstring.pack("16", field)) for field in self.color)
@@ -513,6 +527,8 @@ class MultiZoneGetColorZones(Message):
         super(MultiZoneGetColorZones, self).__init__(MSG_IDS[MultiZoneGetColorZones], target_addr, source_id, seq_num, ack_requested, response_requested)
 
     def get_payload(self):
+        self.payload_fields.append(("Start Index", self.start_index))
+        self.payload_fields.append(("End Index", self.end_index))
         start_index = little_endian(bitstring.pack("8", self.start_index))
         end_index = little_endian(bitstring.pack("8", self.end_index))
         payload = start_index + end_index
