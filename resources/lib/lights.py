@@ -129,7 +129,7 @@ class Light(object):
         # NOTE:
         #   Lifxlan duration is in miliseconds, for hue it's multiple of 100ms - https://developers.meethue.com/documentation/lights-api#16_set_light_state
         try:
-            self.light.set_color(color, state['transitiontime']*100/2, rapid=rapid)
+            self.light.set_color(color, state['transitiontime']*100, rapid=rapid)
         except Exception as e:
             xbmclog("set_color() - light={} - failed to set_color({}) - Exception - {}".format(self.name, color, str(e)))
 

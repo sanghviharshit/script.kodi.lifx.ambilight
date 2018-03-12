@@ -11,6 +11,7 @@ import time
 # https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters#events
 
 logEventHistory = {}
+from tools import configs
 
 # wrap a function to catch, log and then re throw an exception
 def log_error(errors=(Exception, )):
@@ -35,8 +36,8 @@ class GoogleAnalytics():
 
     testing = False
 
-    def __init__(self, metric_logging=True):
-        self.metric_logging = metric_logging
+    def __init__(self):
+
         client_info = clientinfo.ClientInfo()
         self.version = client_info.get_version()
         self.device_id = client_info.get_device_id()
@@ -201,7 +202,7 @@ class GoogleAnalytics():
 
     def sendData(self, data):
 
-        if(self.metric_logging == "false"):
+        if(configs('metric_logging') == "false"):
             return
 
         if (self.testing):
