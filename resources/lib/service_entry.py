@@ -87,7 +87,7 @@ class Service(object):
         # Important: Threads depending on abortRequest will not trigger
         # if profile switch happens more than once.
         self.ga = GoogleAnalytics()
-        
+
         self.monitor = kodimonitor.KodiMonitor()
         self.monitor.hue_service = self
         self.player = player.Player()
@@ -233,7 +233,7 @@ class Service(object):
                                     self, self.ambilight_controller.lights.values()[i], hsv_ratios[i], )
                     except ZeroDivisionError:
                         pass
-                # Sleep for 0.1s
-                if self.monitor.waitForAbort(0.1):
-                    # Abort was requested while waiting. We should exit
-                    break
+            # Sleep for 0.1s
+            if self.monitor.waitForAbort(0.1 if self.player.playingvideo else 1):
+                # Abort was requested while waiting. We should exit
+                break

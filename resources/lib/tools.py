@@ -30,6 +30,7 @@ def notify(title, msg=''):
         xbmc.executebuiltin('XBMC.Notification({}, {}, 3, {})'.format(
             title, msg, __icon__))
 
+# TODO: see if this can be moved to Settings class
 def configs(config, value=None):
     # Get or add addon setting
     global __addon__
@@ -44,16 +45,17 @@ def configs(config, value=None):
 pDialog = None
 
 def show_busy_dialog():
-    pass
-    # xbmc.executebuiltin('ActivateWindow(busydialog)')
+    # pass
+    # TODO - add timeout thread to close the dialog
+    xbmc.executebuiltin('ActivateWindow(busydialog)')
     # pDialog = xbmcgui.DialogProgressBG()
     # pDialog.create('Kodi Lifx', 'Processing your request...')
 
 def hide_busy_dialog():
-    pass
-    # xbmc.executebuiltin('Dialog.Close(busydialog)')
-    # while xbmc.getCondVisibility('Window.IsActive(busydialog)'):
-        # xbmc.sleep(100)
+    # pass
+    xbmc.executebuiltin('Dialog.Close(busydialog)')
+    while xbmc.getCondVisibility('Window.IsActive(busydialog)'):
+        xbmc.sleep(100)
     # if pDialog:
     #     pDialog.update(100, message='Done')
     #     pDialog.close()

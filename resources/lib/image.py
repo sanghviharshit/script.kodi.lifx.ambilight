@@ -124,8 +124,12 @@ class Screenshot:
             for ratio in hsv_ratios:
                 ratio.average_value(overall_value)
 
+            # The first hsv_ratio always looks odd
+            if len(hsv_ratios) > 1:
+                hsv_ratios = hsv_ratios[1:]
+
             if len(hsv_ratios) < num_hsv:
-                hsv_ratios += [hsv_ratios[--1]] * (num_hsv - len(hsv_ratios))
+                hsv_ratios += [hsv_ratios[-1]] * (num_hsv - len(hsv_ratios))
 
             if not color_variation:
                 # All ambilight lights will have one color
