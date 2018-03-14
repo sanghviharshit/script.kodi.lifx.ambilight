@@ -74,17 +74,30 @@ This [Kodi](https://kodi.tv/) add-on controls [Lifx](http://www.lifx.com/) light
 
 
 ## Installation
-
 [![Installation](https://i.imgur.com/zBTnlvo.gif)](https://i.imgur.com/zBTnlvo.gif)
 
-- Download the add-on as a ZIP file from the top of this page
-  - (Click on the green "Clone or download button" then click on the "Download ZIP" link)
-- Open Kodi
-- Go to System -> Settings -> Add-ons -> Install from zip file.
-- Select the zip file from the location where you downloaded the zip file
-- Restart Kodi and configure the add-on:
-  - System -> Settings -> Add-ons -> Enabled add-ons -> Services -> Lifx Ambilight
-  - Configure available settings.
+### Stable release
+  - Open Kodi
+  - Go to System -> Settings -> File Manager -> Add source
+    - Add https://sanghviharshit.com/repo as the URL
+    - Add "Harshit's Addons" as the name for source
+  - Go to System -> Settings -> Add-ons -> Install from zip file.
+  - Select the zip file from "Harshit's Addons" location
+  - Restart Kodi and configure the add-on:
+    - System -> Settings -> Add-ons -> Enabled add-ons -> Services -> Lifx Ambilight
+    - Configure available settings
+
+### Development version
+
+
+  - Download the add-on as a ZIP file from the top of this page
+    - (Click on the green "Clone or download button" then click on the "Download ZIP" link)
+  - Open Kodi
+  - Go to System -> Settings -> Add-ons -> Install from zip file.
+  - Select the zip file from the location where you downloaded the zip file
+  - Restart Kodi and configure the add-on:
+    - System -> Settings -> Add-ons -> Enabled add-ons -> Services -> Lifx Ambilight
+    - Configure available settings.
 
 
 ## Configurations
