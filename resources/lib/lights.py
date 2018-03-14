@@ -247,16 +247,14 @@ class Controller(object):
             .format(self.__class__.__name__)
         )
 
+        self.set_state(
+            on = False
+        )
+        
         if self.settings.force_light_on:
-            on = True
-
-        self.set_state(
-            on=False
-        )
-
-        self.set_state(
-            on=on
-        )
+            self.set_state(
+                on = True
+            )
 
         self.restore_initial_state(
             force_on=self.settings.force_light_on,

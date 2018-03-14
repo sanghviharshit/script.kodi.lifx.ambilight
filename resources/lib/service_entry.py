@@ -52,6 +52,17 @@ class Service(object):
         xbmclog("KODI Version: {}".format(xbmc.getInfoLabel('System.BuildVersion')))
         xbmclog("{} Version: {}".format(self.addon_name, self.client_info.get_version()))
 
+        self.ga = GoogleAnalytics()
+
+        try:
+            self.ga.sendEventData("Application", "Startup")
+            self.ga.sendEventData("Version", "OS", platform.platform())
+            self.ga.sendEventData("Version", "Python", platform.python_version())
+            self.ga.sendEventData("Version", "Kodi", xbmc.getInfoLabel('System.BuildVersion'))
+            self.ga.sendEventData("Version", "Addon", self.client_info.get_version())
+        except Exception:
+            pass
+
         self.connected = False
 
     def service_entry_point(self, args):
@@ -86,20 +97,10 @@ class Service(object):
         self.settings = Settings()
         # Important: Threads depending on abortRequest will not trigger
         # if profile switch happens more than once.
-        self.ga = GoogleAnalytics()
-
         self.monitor = kodimonitor.KodiMonitor()
         self.monitor.hue_service = self
         self.player = player.Player()
         self.player.hue_service = self
-
-        self.ga.sendEventData("Application", "Startup")
-
-        try:
-            self.ga.sendEventData("Version", "OS", platform.platform())
-            self.ga.sendEventData("Version", "Python", platform.python_version())
-        except Exception:
-            pass
 
         # if there's a bridge IP, try to talk to it.
         if self.settings.bridge_ip not in ["-", "", None]:
