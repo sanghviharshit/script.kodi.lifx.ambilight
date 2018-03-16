@@ -1,6 +1,7 @@
 import random
 
 import lights
+
 from tools import xbmclog
 
 

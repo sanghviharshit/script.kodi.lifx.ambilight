@@ -2,6 +2,7 @@ from threading import Event
 import os
 import sys
 import platform
+import time
 
 import xbmc
 
@@ -41,6 +42,8 @@ class Service(object):
     monitor = None
     player = None
 
+    lastMetricPing = time.time()
+
     def __init__(self):
         self.client_info = clientinfo.ClientInfo()
         self.addon_name = self.client_info.get_addon_name()
@@ -65,32 +68,20 @@ class Service(object):
 
         self.connected = False
 
-    def service_entry_point(self, args):
-        try:
-            params = dict(arg.split("=") for arg in args.split("&"))
-        except Exception:
-            params = {}
+    def service_entry_point(self):
 
-        xbmclog(
-            'In Service.service_entry_point() '
-            'params={}'.format(
-                params)
-            )
+        xbmclog('In Service.service_entry_point()')
 
-        if params == {}:
-            if not self.startup:
-                self.startup = self._startup()
+        if not self.startup:
+            self.startup = self._startup()
 
-            if self.player is None:
-                xbmclog('Could not instantiate player')
-                return
-            # run() until abortRequested to update ambilight lights
-            self.run()
-            # Kodi requested abort
-            self.shutdown()
-        else:
-            # not yet implemented
-            pass
+        if self.player is None:
+            xbmclog('Could not instantiate player')
+            return
+        # run() until abortRequested to update ambilight lights
+        self.run()
+        # Kodi requested abort
+        self.shutdown()
 
 
     def _startup(self):
@@ -102,16 +93,7 @@ class Service(object):
         self.player = player.Player()
         self.player.hue_service = self
 
-        # if there's a bridge IP, try to talk to it.
-        if self.settings.bridge_ip not in ["-", "", None]:
-            result = bridge.user_exists(
-                self.settings.bridge_ip,
-                self.settings.bridge_user
-            )
-            if result:
-                self.connected = True
-
-        if self.connected:
+        if self.settings.ambilight_group or self.settings.theater_group or self.settings.static_group:
             self.update_controllers()
 
             if self.settings.misc_initialflash:
@@ -122,39 +104,33 @@ class Service(object):
         return True
 
     def shutdown(self):
-        del self.settings
-        del self.monitor
-        del self.player
+        if self.settings:
+            del self.settings
+        if self.monitor:
+            del self.monitor
+        if self.player:
+            del self.player
 
         xbmclog("======== SERVICE SHUTDOWN ========")
 
-        if self.ga == None:
+        if not self.ga:
             self.ga = GoogleAnalytics()
 
         self.ga.sendEventData("Application", "Shutdown")
 
     def update_controllers(self):
         self.ambilight_controller = AmbilightController(
-            bridge.get_lights_by_ids(
-                self.settings.bridge_ip,
-                self.settings.bridge_user,
-                self.settings.ambilight_group.split(',')),
+            bridge.get_lights_by_ids(self.settings.ambilight_group.split(',')),
             self.settings
         )
 
         self.theater_controller = TheaterController(
-            bridge.get_lights_by_ids(
-                self.settings.bridge_ip,
-                self.settings.bridge_user,
-                self.settings.theater_group.split(',')),
+            bridge.get_lights_by_ids(self.settings.theater_group.split(',')),
             self.settings
         )
 
         self.static_controller = StaticController(
-            bridge.get_lights_by_ids(
-                self.settings.bridge_ip,
-                self.settings.bridge_user,
-                self.settings.static_group.split(',')),
+            bridge.get_lights_by_ids(self.settings.static_group.split(',')),
             self.settings
         )
 
@@ -214,6 +190,13 @@ class Service(object):
                 startReadOut = False
                 vals = {}
                 if self.player.playingvideo:  # only if there's actually video
+                    # ping metrics server to keep sessions alive while playing
+                    # ping every 5 min
+                    timeSinceLastPing = time.time() - self.lastMetricPing
+                    if(timeSinceLastPing > 300):
+                        self.lastMetricPing = time.time()
+                        ga = GoogleAnalytics()
+                        ga.sendEventData("Playback", "Playing")
                     try:
                         pixels = capture.getImage(200)
                         if len(pixels) > 0 and self.player.playingvideo:

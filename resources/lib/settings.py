@@ -2,6 +2,8 @@ import sys
 
 import xbmcaddon
 
+from tools import xbmclog
+
 __addon__ = sys.modules["__main__"].__addon__
 
 
@@ -9,12 +11,26 @@ class Settings():
     def __init__(self, *args, **kwargs):
         self.readxml()
 
+    @staticmethod
+    def getSetting(key):
+        # Get or add addon setting
+        global __addon__
+        # returns unicode object
+        value = __addon__.getSetting(key)
+        xbmclog("getSetting({})={}".format(key, value))
+        return value
+
+    @staticmethod
+    def setSetting(key, value):
+        # Get or add addon setting
+        global __addon__
+        if value is not None:
+            __addon__.setSetting(key, value)
+            xbmclog("Setting {}={}".format(key, value))
+
     def readxml(self):
         global __addon__
         __addon__ = xbmcaddon.Addon()
-
-        self.bridge_ip = __addon__.getSetting("bridge_ip")
-        self.bridge_user = __addon__.getSetting("bridge_user")
 
         self.connected = __addon__.getSetting("connected") == "true"
         self.ambilight_group = __addon__.getSetting("ambilight_group")

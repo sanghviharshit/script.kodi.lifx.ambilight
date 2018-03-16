@@ -1,6 +1,6 @@
 import lights
-from tools import xbmclog
 
+from tools import xbmclog
 
 class TheaterController(lights.Controller):
     def __init__(self, *args, **kwargs):

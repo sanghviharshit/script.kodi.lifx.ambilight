@@ -7,11 +7,12 @@ import hashlib
 import xbmc
 import time
 
+from settings import Settings
+
 # for info on the metrics that can be sent to Google Analytics
 # https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters#events
 
 logEventHistory = {}
-from tools import configs
 
 # wrap a function to catch, log and then re throw an exception
 def log_error(errors=(Exception, )):
@@ -202,7 +203,7 @@ class GoogleAnalytics():
 
     def sendData(self, data):
 
-        if(configs('metric_logging') == "false"):
+        if(Settings.getSetting('metric_logging') == "false"):
             return
 
         if (self.testing):

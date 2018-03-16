@@ -5,9 +5,10 @@ import clientinfo
 
 from tools import xbmclog
 
-
 class KodiMonitor(xbmc.Monitor):
+
     hue_service = None
+
     def __init__(self):
         xbmclog('In KodiMonitor.__init__()')
         xbmc.Monitor.__init__(self)
@@ -23,13 +24,11 @@ class KodiMonitor(xbmc.Monitor):
         if sender == clientinfo.ClientInfo().get_addon_id():
             if 'discover' in method:
                 self.hue_service.ga.sendEventData("Configurations", "Discover")
-                ui.discover_hue_bridge(self.hue_service)
+                ui.discover_lights(self.hue_service)
                 self.hue_service.update_controllers()
             if 'start_setup_theater_lights' in method:
                 self.hue_service.ga.sendEventData("Configurations", "Setup Group", "Theater")
                 ret = ui.multiselect_lights(
-                    self.hue_service.settings.bridge_ip,
-                    self.hue_service.settings.bridge_user,
                     'Select Theater Lights',
                     ','.join([self.hue_service.settings.ambilight_group,
                               self.hue_service.settings.static_group]),
@@ -40,8 +39,6 @@ class KodiMonitor(xbmc.Monitor):
             if 'start_setup_theater_subgroup' in method:
                 self.hue_service.ga.sendEventData("Configurations", "Setup Group", "Theater Subgroup")
                 ret = ui.multiselect_lights(
-                    self.hue_service.settings.bridge_ip,
-                    self.hue_service.settings.bridge_user,
                     'Select Theater Subgroup',
                     ','.join([self.hue_service.settings.ambilight_group,
                               self.hue_service.settings.static_group]),
@@ -52,8 +49,6 @@ class KodiMonitor(xbmc.Monitor):
             if 'start_setup_ambilight_lights' in method:
                 self.hue_service.ga.sendEventData("Configurations", "Setup Group", "Ambilight")
                 ret = ui.multiselect_lights(
-                    self.hue_service.settings.bridge_ip,
-                    self.hue_service.settings.bridge_user,
                     'Select Ambilight Lights',
                     ','.join([self.hue_service.settings.theater_group,
                               self.hue_service.settings.static_group]),
@@ -64,8 +59,6 @@ class KodiMonitor(xbmc.Monitor):
             if 'start_setup_static_lights' in method:
                 self.hue_service.ga.sendEventData("Configurations", "Setup Group", "Static")
                 ret = ui.multiselect_lights(
-                    self.hue_service.settings.bridge_ip,
-                    self.hue_service.settings.bridge_user,
                     'Select Static Lights',
                     ','.join([self.hue_service.settings.theater_group,
                               self.hue_service.settings.ambilight_group]),

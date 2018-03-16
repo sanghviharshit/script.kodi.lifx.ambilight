@@ -6,37 +6,35 @@ from tools import xbmclog
 
 class Light(object):
 
-    def __init__(self, bridge_ip, username, light_id, light):
-        self.bridge_ip = bridge_ip
-        self.username = username
+    def __init__(self, light_id, light):
 
-        # xbmclog("Adding Light object: {}".format(light))
+        log.info("Adding Light object: {}".format(light))
 
+        self.name = light_id
         self.light_id = light_id
         self.light = light
 
-        # self.fullspectrum = False
-        # self.color = [0,0,0,3500]
-        # self.livingwhite = True
+        self.supports_temperature = True
+        self.color = [0,0,0,3500]
+        self.supports_color = True
 
-        self.color = self.light.get_color()
-        # self.features = light.get_product_features()
-        self.fullspectrum = self.light.supports_color() # All Lifx Color bulbs are fullspectrum
-        self.livingwhite = not self.light.supports_color()
+        try:
+            self.color = self.light.get_color()
+            self.product_name = self.light.get_product_name()
+            self.product_features = self.get_product_features()
+            self.supports_temperature = self.light.supports_temperature()
+            self.supports_color = not self.light.supports_color()
+        except WorkflowException as error:
+            errStrings = ga.formatException()
+            ga.sendEventData("Exception", errStrings[0], errStrings[1])
+            xbmclog("{}.__init__({}) - Exception - {}".format(self.__class__.__name__, light_id, str(error)))
 
-        self.name = light_id
+        xbmclog("light={} - product_name={}, product_features={}".format(self.product_name, self.product_features))
 
-        self.init_hue = None
-        self.hue = None
-
-        self.init_sat = None
-        self.sat = None
-
-        if self.fullspectrum:
-            self.init_hue = self.color[0]
-            self.hue = self.init_hue
-            self.init_sat = self.color[1]*255/65535
-            self.sat = self.init_sat
+        self.init_hue = self.color[0]
+        self.hue = self.init_hue
+        self.init_sat = self.color[1]*255/65535
+        self.sat = self.init_sat
 
         self.init_bri = self.color[2]*255/65535
         self.bri = self.init_bri
@@ -47,16 +45,20 @@ class Light(object):
         self.init_on = (self.light.power_level > 0)
         self.on = self.init_on
 
-        # xbmclog("Added light={} - current_state: hue-{}, sat-{}, bri-{},on-{}".format(self.name, self.hue, self.sat, self.bri, self.on))
-        # self.session = requests.Session()
+        xbmclog("Added light={}".format(self.light_id, self.light))
 
-    def set_state(self, hue=None, sat=None, bri=None, kel=None, on=None,
+    def set_state(self, hue=0, sat=0, bri=0, kel=3500, on=None,
                   transition_time=None):
         # NOTE: From https://github.com/mclarkk/lifxlan -
         #   rapid is True/False. If True, don't wait for successful confirmation, just send multiple packets and move on
         #   rapid is meant for super-fast light shows with lots of changes.
         rapid = False
-        state = {}
+        state = {
+            'hue' : 0,
+            'sat' : 0,
+            'bri' : 0,
+            'kel' : 3500
+        }
 
         # xbmclog('set_state() - light={} - new_state: hue={}, sat={}, bri={}, on={}, transition_time={})'.format(self.name, hue, sat, bri, on, transition_time))
 
@@ -68,10 +70,10 @@ class Light(object):
         if on is not None and on != self.on:
             self.on = on
             state['on'] = on
-        if hue is not None and not self.livingwhite and hue != self.hue:
+        if hue is not None and not self.supports_color and hue != self.hue:
             self.hue = hue
             state['hue'] = hue
-        if sat is not None and not self.livingwhite and sat != self.sat:
+        if sat is not None and not self.supports_color and sat != self.sat:
             self.sat = sat
             state['sat'] = sat
         if bri is not None and bri != self.bri:
@@ -114,7 +116,9 @@ class Light(object):
         if 'on' in state:
             try:
                 self.light.set_power(state['on'], rapid=False)
-            except Exception as e:
+            except WorkflowException as error:
+                errStrings = ga.formatException()
+                ga.sendEventData("Exception", errStrings[0], errStrings[1])
                 xbmclog("set_state() - set_power({}) - Exception - {}".format(state['on'], str(e)))
 
         # xbmclog('set_state() - light={} - final_state={})'.format(self.name, state))
@@ -165,7 +169,7 @@ class Controller(object):
                 new_light = Light("", "", light_id, lifx_light)
                 self.lights[light_id] = new_light
             except Exception as e:
-                xbmclog("Controller.__init__(lights={}) - Exception - {}".format(lights, str(e)))
+                xbmclog("{}.__init__(lights={}) - Exception - {}".format(self.__class__.__name__, lights, str(e)))
 
         self.settings = settings
 
@@ -250,7 +254,7 @@ class Controller(object):
         self.set_state(
             on = False
         )
-        
+
         if self.settings.force_light_on:
             self.set_state(
                 on = True

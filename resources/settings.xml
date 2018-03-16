@@ -11,11 +11,7 @@
         <setting id="setup_theater_lights" type="action" enable="true" label="1120" action="NotifyAll(script.kodi.lifx.ambilight, start_setup_theater_lights)" />
         <setting id="setup_ambilight_lights" type="action" enable="true" label="1130" action="NotifyAll(script.kodi.lifx.ambilight, start_setup_ambilight_lights)" />
         <setting id="setup_static_lights" type="action" enable="true" label="1140" action="NotifyAll(script.kodi.lifx.ambilight, start_setup_static_lights)" />
-        <!-- Bridge -->
-        <!-- <setting type="lsep" label="1200" /> -->
-        <setting id="bridge_ip" type="text" label="1220" enable="true" visible="false" default="127.0.0.1" />
-        <setting id="bridge_user" type="text" label="1230" enable="true" visible= "false" default="kodi" />
-
+        
         <setting id="ambilight_group" label="1300" type="text" visible="false" default="" />
         <setting id="theater_group" label="1300" type="text" visible="false" default="" />
         <setting id="theater_subgroup" label="1300" type="text" visible="false" default="" />
