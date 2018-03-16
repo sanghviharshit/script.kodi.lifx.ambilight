@@ -1,4 +1,5 @@
 import random
+import logging
 
 import lights
 from tools import xbmclog
@@ -9,7 +10,7 @@ class StaticController(lights.Controller):
         super(StaticController, self).__init__(*args, **kwargs)
 
     def on_playback_start(self, resume=False):
-        xbmclog('In StaticController.on_playback_start() '
+        log.info('In StaticController.on_playback_start() '
                 'turning on static group')
         # if resume == False:
             # self.save_state_as_initial()

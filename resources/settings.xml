@@ -138,5 +138,6 @@
         <setting id="force_light_on" type="bool" label="5140" default="false" />
         <setting id="startup_delay" type="number" label="5150" default="5" option="int" />
         <setting id="metric_logging" type="bool" label="5160" default="true" />
+        <setting id="log_level" type="enum" label="6000" values="Disabled|Info|Debug" default="1" />
     </category>
 </settings>

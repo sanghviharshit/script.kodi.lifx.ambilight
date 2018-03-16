@@ -1,3 +1,4 @@
+import logging
 from threading import Event
 import os
 import sys
@@ -9,13 +10,12 @@ import bridge
 import ui
 import algorithm
 import image
-
 import clientinfo
 import player
 import kodimonitor
 
 from settings import Settings
-from tools import xbmclog
+from tools import configsw
 from ambilight_controller import AmbilightController
 from theater_controller import TheaterController
 from static_controller import StaticController
@@ -28,6 +28,11 @@ fmt = capture.getImageFormat()
 # BGRA or RGBA
 fmtRGBA = fmt == 'RGBA'
 
+#################################################################################################
+
+log = logging.getLogger("Lifx4Kodi."+__name__)
+
+#################################################################################################
 
 class Service(object):
 
@@ -45,12 +50,15 @@ class Service(object):
         self.client_info = clientinfo.ClientInfo()
         self.addon_name = self.client_info.get_addon_name()
 
+        log_level = configs('log_level')
+
         # Initial logging
-        xbmclog("======== START {} ========".format(self.addon_name))
-        xbmclog("Python Version: {}".format(sys.version))
-        xbmclog("Platform: {}".format(self.client_info.get_platform()))
-        xbmclog("KODI Version: {}".format(xbmc.getInfoLabel('System.BuildVersion')))
-        xbmclog("{} Version: {}".format(self.addon_name, self.client_info.get_version()))
+        log.info("======== START {} ========".format(self.addon_name))
+        log.info("Python Version: {}".format(sys.version))
+        log.info("Platform: {}".format(self.client_info.get_platform()))
+        log.info("KODI Version: {}".format(xbmc.getInfoLabel('System.BuildVersion')))
+        log.info("{} Version: {}".format(self.addon_name, self.client_info.get_version()))
+        log.info("Log Level: {}".format(log_level))
 
         self.ga = GoogleAnalytics()
 
@@ -65,32 +73,19 @@ class Service(object):
 
         self.connected = False
 
-    def service_entry_point(self, args):
-        try:
-            params = dict(arg.split("=") for arg in args.split("&"))
-        except Exception:
-            params = {}
+    def service_entry_point(self):
+        if not self.startup:
+            self.startup = self._startup()
 
-        xbmclog(
-            'In Service.service_entry_point() '
-            'params={}'.format(
-                params)
-            )
+        if self.player is None:
+            log.error('Could not instantiate player')
+            return
 
-        if params == {}:
-            if not self.startup:
-                self.startup = self._startup()
+        # run() until abortRequested to update ambilight lights
+        self.run()
 
-            if self.player is None:
-                xbmclog('Could not instantiate player')
-                return
-            # run() until abortRequested to update ambilight lights
-            self.run()
-            # Kodi requested abort
-            self.shutdown()
-        else:
-            # not yet implemented
-            pass
+        # Kodi requested abort
+        self.shutdown()
 
 
     def _startup(self):
@@ -118,7 +113,7 @@ class Service(object):
                 self.ambilight_controller.flash_lights()
                 self.theater_controller.flash_lights()
                 self.static_controller.flash_lights()
-        xbmclog("======== SERVICE STARTUP ========")
+        log.info("======== SERVICE STARTUP ========")
         return True
 
     def shutdown(self):
@@ -126,7 +121,7 @@ class Service(object):
         del self.monitor
         del self.player
 
-        xbmclog("======== SERVICE SHUTDOWN ========")
+        log.info("======== SERVICE SHUTDOWN ========")
 
         if self.ga == None:
             self.ga = GoogleAnalytics()
@@ -158,7 +153,7 @@ class Service(object):
             self.settings
         )
 
-        xbmclog(
+        log.info(
             'In Hue.update_controllers() instantiated following '
             'controllers {} {} {}'.format(
                 self.theater_controller,
@@ -168,7 +163,7 @@ class Service(object):
         )
 
     def state_changed(self, state, duration):
-        xbmclog('In state_changed(state={}, duration={})'.format(
+        log.info('In state_changed(state={}, duration={})'.format(
             state, duration))
 
         if (xbmc.getCondVisibility('Window.IsActive(screensaver-atv4.xml)') or
