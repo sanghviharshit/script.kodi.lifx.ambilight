@@ -35,8 +35,8 @@ def multiselect_lights(label, exclude, preselect):
 
 def discover_lights(hue):
     notify("Lifx Device Discovery", "Starting")
-    lights = bridge.discover()
-    if len(lights) > 0:
+    num_lights = bridge.discover()
+    if num_lights > 0:
         hue.connected = True
         # notify("Hue Bridge Discovery", "Finished")
     else:
