@@ -1,35 +1,50 @@
 import json
 # import requests
 
-from tools import xbmclog
+from lifxlan import *
 
+from tools import xbmclog
+from ga_client import GoogleAnalytics
+
+ga = GoogleAnalytics()
 
 class Light(object):
 
-    def __init__(self, light_id, light):
+    def __init__(self, light):
+        global ga
+        xbmclog("Adding Light <{}>".format(light.mac_addr))
 
-        log.info("Adding Light object: {}".format(light))
-
-        self.name = light_id
-        self.light_id = light_id
         self.light = light
 
-        self.supports_temperature = True
-        self.color = [0,0,0,3500]
+        self.name = self.light.mac_addr
+        self.product_name = ''
+        self.product_features = None
         self.supports_color = True
+        self.supports_temperature = True
+        self.supports_multizone = False
+        self.color = [0,0,0,3500]
 
         try:
-            self.color = self.light.get_color()
+            # Label is not set on initialization because refresh() was never called after initializing `light`
+            if self.light.label == None:
+                self.light.refresh()
+
+            # Use cached responses after refresh() called once
+            self.name = self.light.label
             self.product_name = self.light.get_product_name()
-            self.product_features = self.get_product_features()
+            self.product_features = self.light.get_product_features()
             self.supports_temperature = self.light.supports_temperature()
-            self.supports_color = not self.light.supports_color()
+            self.supports_color = self.light.supports_color()
+            self.supports_multizone = self.light.supports_multizone()
+
+            # color is not cached
+            self.color = self.light.get_color()
+
         except WorkflowException as error:
             errStrings = ga.formatException()
+            ga.sendExceptionData(errStrings[0])
             ga.sendEventData("Exception", errStrings[0], errStrings[1])
-            xbmclog("{}.__init__({}) - Exception - {}".format(self.__class__.__name__, light_id, str(error)))
-
-        xbmclog("light={} - product_name={}, product_features={}".format(self.product_name, self.product_features))
+            xbmclog("{}.__init__({}) - Exception - {}".format(self.__class__.__name__, self.name, str(error)))
 
         self.init_hue = self.color[0]
         self.hue = self.init_hue
@@ -45,97 +60,110 @@ class Light(object):
         self.init_on = (self.light.power_level > 0)
         self.on = self.init_on
 
-        xbmclog("Added light={}".format(self.light_id, self.light))
+        xbmclog("Added light={}".format(self))
 
     def set_state(self, hue=0, sat=0, bri=0, kel=3500, on=None,
                   transition_time=None):
         # NOTE: From https://github.com/mclarkk/lifxlan -
         #   rapid is True/False. If True, don't wait for successful confirmation, just send multiple packets and move on
         #   rapid is meant for super-fast light shows with lots of changes.
-        rapid = False
         state = {
-            'hue' : 0,
-            'sat' : 0,
-            'bri' : 0,
-            'kel' : 3500
+            'hue' : None,
+            'sat' : None,
+            'bri' : None,
+            'kel' : 3500,
+            'on' : None,
+            'transitiontime' : 0,
+            'rapid' : False
         }
 
-        # xbmclog('set_state() - light={} - new_state: hue={}, sat={}, bri={}, on={}, transition_time={})'.format(self.name, hue, sat, bri, on, transition_time))
-
-        # xbmclog("set_state() - light={} - current_state: hue-{}, sat-{}, bri-{},on-{}".format(self.name, self.hue, self.sat, self.bri, self.on))
+        xbmclog('set_state() - light={} - requested_state: HSBK=[{}, {}, {}, {}] on={} transition_time={})'.format(self.name, hue, sat, bri, kel, on, transition_time))
+        xbmclog("set_state() - light={} - current_state: HSBK=[{}, {}, {}, {}] on={}".format(self.name, self.hue, self.sat, self.bri, self.kel, self.on))
 
         if transition_time is not None:
             state['transitiontime'] = transition_time
-            # rapid = False
+            # transition_time less than 1 second => set rapid = True
+            state['rapid'] = True if transition_time < 1/100 else False
         if on is not None and on != self.on:
             self.on = on
             state['on'] = on
-        if hue is not None and not self.supports_color and hue != self.hue:
+        if hue is not None and self.supports_color and hue != self.hue:
             self.hue = hue
             state['hue'] = hue
-        if sat is not None and not self.supports_color and sat != self.sat:
+        if sat is not None and self.supports_color and sat != self.sat:
             self.sat = sat
             state['sat'] = sat
         if bri is not None and bri != self.bri:
             self.bri = bri
             state['bri'] = bri
-            # Hue specific
-            if bri <= 0 and self.on and on is None:
-                self.on = False
-                state['on'] = False
-            if bri >= 1 and not self.on and on is None:
-                self.on = True
-                state['on'] = True
-
-        if kel is not None and kel != self.kel:
+        if kel is not None and self.supports_temperature and kel != self.kel:
             self.kel = kel
             state['kel'] = kel
-            if kel != 3500:
-                state['hue'] = 0
-                state['sat'] = 0
-        elif sat == 0:
-            state["kel"] = self.init_kel
 
-        if 'hue' not in state:
-            state['hue'] = self.hue
-        if 'sat' not in state:
-            state['sat'] = self.sat
-        if 'bri' not in state:
-            state['bri'] = self.bri
-        if 'kel' not in state:
-            state['kel'] = self.kel
-        if 'transitiontime' not in state:
-            state['transitiontime'] = 0
-            rapid = True
+        # Validate HSBK values
 
-        # override kel to neutral if hue or sat > 0
-        if state['hue'] > 0 or state['hue'] > 0:
+        # if `kel` is not neutral, reset `hue`, `sat` to initial values
+        if kel != None and kel != 3500:
+            self.hue = self.init_hue
+            self.sat = self.init_hue
+            state['hue'] = self.init_hue
+            state['sat'] = self.init_sat
+
+        # Use initial Kel values if `sat` == 0 and not `kel` != None
+        if sat == 0 and kel is None:
+            self.kel = self.init_kel
+            state["kel"] = self.kel
+        if bri <= 0 and self.on and on is None:
+            self.on = False
+            state['on'] = False
+        # Turn the light on or off based on `bri` value
+        if bri >= 1 and not self.on and on is None:
+            self.on = True
+            state['on'] = True
+        # Override `kel` to neutral if `sat` > 0
+        if sat > 0:
             self.kel = 3500
-            state['kel']  = 3500  # Set kelvin to neutral
+            state['kel']  = self.kel
 
-        if 'on' in state:
+        # reset `hue` and `sat` if light doesn't support color
+        if not self.supports_color:
+            state['hue'] = self.init_hue
+            state['sat'] = self.init_sat
+
+        # reset `kel` if light doesn't support temperature
+        if not self.supports_temperature:
+            state['kel'] = self.init_kel
+
+        xbmclog('set_state() - light={} - final_state={})'.format(self.name, state))
+
+        # Set power state
+        if state['on'] != None:
             try:
                 self.light.set_power(state['on'], rapid=False)
             except WorkflowException as error:
                 errStrings = ga.formatException()
+                ga.sendExceptionData(errStrings[0])
                 ga.sendEventData("Exception", errStrings[0], errStrings[1])
-                xbmclog("set_state() - set_power({}) - Exception - {}".format(state['on'], str(e)))
+                xbmclog("set_state() - set_power({}) - Exception - {}".format(state['on'], str(error)))
 
-        # xbmclog('set_state() - light={} - final_state={})'.format(self.name, state))
-        # NOTE:
-        #   Lifx color is a list of HSBK values: [hue (0-65535), saturation (0-65535), brightness (0-65535), Kelvin (2500-9000)]
-        #   65535/255 = 257
-        color = [int(state['hue']),int(state['sat']*257),int(state['bri']*257),int(state['kel'])]
-        # xbmclog('set_state() - light={} - color={})'.format(self.name, color))
-                #color_log = [int(data["hue"]*360/65535),int(data["sat"]*100/255),int(data["bri"]*100/255),int(data["kel"])]
-        #self.logger.debuglog("set_light2: %s: %s  (%s ms)" % (self.light.get_label(), color_log, data["transitiontime"]*self.multiplier))
-
-        # NOTE:
-        #   Lifxlan duration is in miliseconds, for hue it's multiple of 100ms - https://developers.meethue.com/documentation/lights-api#16_set_light_state
+        # Set color state
         try:
-            self.light.set_color(color, state['transitiontime']*100, rapid=rapid)
-        except Exception as e:
-            xbmclog("set_color() - light={} - failed to set_color({}) - Exception - {}".format(self.name, color, str(e)))
+            # NOTE:
+            #   Lifx color is a list of HSBK values: [hue (0-65535), saturation (0-65535), brightness (0-65535), Kelvin (2500-9000)]
+            #   65535/255 = 257
+            color = [int(state['hue']),int(state['sat']*257),int(state['bri']*257),int(state['kel'])]
+            # xbmclog('set_state() - light={} - color={})'.format(self.name, color))
+                    #color_log = [int(data["hue"]*360/65535),int(data["sat"]*100/255),int(data["bri"]*100/255),int(data["kel"])]
+            #self.logger.debuglog("set_light2: %s: %s  (%s ms)" % (self.light.get_label(), color_log, data["transitiontime"]*self.multiplier))
+
+            # NOTE:
+            #   Lifxlan duration is in miliseconds, for hue it's multiple of 100ms - https://developers.meethue.com/documentation/lights-api#16_set_light_state
+            self.light.set_color(color, state['transitiontime']*100, rapid=state['rapid'])
+        except WorkflowException as error:
+            errStrings = ga.formatException()
+            ga.sendExceptionData(errStrings[0])
+            ga.sendEventData("Exception", errStrings[0], errStrings[1])
+            xbmclog("set_color() - light={} - failed to set_color({}) - Exception - {}".format(self.name, color, str(error)))
 
     def restore_initial_state(self, transition_time=0):
         self.set_state(
@@ -155,21 +183,29 @@ class Light(object):
         self.init_on = self.on
 
     def __repr__(self):
-        return ('<Light({}): HSBK: [{}, {}, {}, {}], on: {}>'.format(
-            self.name, self.hue, self.sat, self.bri, self.kel, self.on))
+        indent = "  "
+        s = self.light.device_characteristics_str(indent)
+        s += indent + "Color (HSBK): {}\n".format(self.color)
+        s += indent + self.light.device_firmware_str(indent)
+        s += indent + self.light.device_product_str(indent)
 
+        return s
 
 class Controller(object):
 
     def __init__(self, lights, settings):
+        global ga
         self.lights = {}
 
         for light_id, lifx_light in lights.items():
             try:
-                new_light = Light("", "", light_id, lifx_light)
+                new_light = Light(lifx_light)
                 self.lights[light_id] = new_light
-            except Exception as e:
-                xbmclog("{}.__init__(lights={}) - Exception - {}".format(self.__class__.__name__, lights, str(e)))
+            except WorkflowException as error:
+                errStrings = ga.formatException()
+                ga.sendExceptionData(errStrings[0])
+                ga.sendEventData("Exception", errStrings[0], errStrings[1])
+                xbmclog("{}.__init__(lights={}) - Exception ({}) - {}".format(self.__class__.__name__, lights.keys(), light_id, str(error)))
 
         self.settings = settings
 
@@ -269,12 +305,12 @@ class Controller(object):
             ret = self.lights.values()
         else:
             ret = [light for light in
-                   self.lights.values() if light.light_id in lights]
+                   self.lights.values() if light.name in lights]
 
         xbmclog(
             'In {}._calculate_subgroup'
             '(lights={}) returning {}'.format(
-                self.__class__.__name__, lights, ret)
+                self.__class__.__name__, lights, len(ret))
         )
         return ret
 
@@ -291,4 +327,4 @@ class Controller(object):
         return time
 
     def __repr__(self):
-        return ('<{} {}>'.format(self.__class__.__name__, self.lights))
+        return ('<{} ({})>'.format(self.__class__.__name__, self.lights.keys()))

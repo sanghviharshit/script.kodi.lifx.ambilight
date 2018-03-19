@@ -8,8 +8,22 @@ __addon__ = sys.modules["__main__"].__addon__
 
 
 class Settings():
-    def __init__(self, *args, **kwargs):
+    def __init__(self, hue):
+
+        xbmclog('In Settings.__init__()')
+
+        self.readonce = False
         self.readxml()
+
+        self.hue = hue
+
+        # Report initial settings to GA
+        for k, v in self.__dict__.items():
+            if k == "ambilight_group" or k == "theater_group" or k == "theater_subgroup" or k == "static_group":
+                v = len(str(v).split(','))
+            self.hue.ga.sendEventData("Initial Settings", k, v, ni=1)
+        self.readonce = True
+
 
     @staticmethod
     def getSetting(key):
@@ -28,11 +42,38 @@ class Settings():
             __addon__.setSetting(key, value)
             xbmclog("Setting {}={}".format(key, value))
 
+    # TODO: Remove duplicate - setSetting()
+    def update(self, **kwargs):
+        self.__dict__.update(**kwargs)
+        for k, v in kwargs.iteritems():
+            __addon__.setSetting(k, str(v))
+            if k == "ambilight_group" or k == "theater_group" or k == "theater_subgroup" or k == "static_group":
+                v = len(str(v).split(','))
+            self.hue.ga.sendEventData("Updated Settings", k, str(v))
+
     def readxml(self):
         global __addon__
         __addon__ = xbmcaddon.Addon()
 
+        # TODO: Add GA update event here
         self.connected = __addon__.getSetting("connected") == "true"
+
+        # TODO - Remove duplicate code
+        # self.update_setting("Setting name", self.ambilight_group, __addon__.getSetting("setting_id"))
+
+        # Settings were read once already, so this is a manual update
+        if self.readonce == True:
+            pass
+            # self.ambilight_group is changed before settings are saved
+            # if set(self.ambilight_group.split(',')) != set(__addon__.getSetting("ambilight_group").split(',')):
+            #     self.hue.ga.sendEventData("Settings", "Update", "ambilight_group", len(__addon__.getSetting("ambilight_group").split(',')), 1)
+            # if set(self.theater_group.split(',')) != set(__addon__.getSetting("theater_group").split(',')):
+            #     self.hue.ga.sendEventData("Settings", "Update", "theater_group", len(__addon__.getSetting("theater_group").split(',')), 1)
+            # if set(self.theater_subgroup.split(',')) != set(__addon__.getSetting("theater_subgroup").split(',')):
+            #     self.hue.ga.sendEventData("Settings", "Update", "theater_subgroup", len(__addon__.getSetting("theater_subgroup").split(',')), 1)
+            # if set(self.static_group.split(',')) != set(__addon__.getSetting("static_group").split(',')):
+            #     self.hue.ga.sendEventData("Settings", "Update", "static_group", len(__addon__.getSetting("static_group").split(',')), 1)
+
         self.ambilight_group = __addon__.getSetting("ambilight_group")
         self.theater_group = __addon__.getSetting("theater_group")
         self.theater_subgroup = __addon__.getSetting("theater_subgroup")
@@ -107,12 +148,6 @@ class Settings():
 
         if self.ambilight_min > self.ambilight_max:
             self.update(ambilight_min=self.ambilight_max)
-
-
-    def update(self, **kwargs):
-        self.__dict__.update(**kwargs)
-        for k, v in kwargs.iteritems():
-            __addon__.setSetting(k, str(v))
 
     def __repr__(self):
         return '<Settings\n{}\n>'.format('\n'.join(['{}={}'.format(key, value) for key, value in self.__dict__.items()]))

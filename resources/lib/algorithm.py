@@ -2,9 +2,8 @@ import math
 
 
 def transition_colorspace(hue, light, hsvratio):
-    fullspectrum = light.fullspectrum
     h, s, v = hsvratio.hue(
-        fullspectrum, hue.settings.ambilight_min, hue.settings.ambilight_max
+        hue.settings.ambilight_min, hue.settings.ambilight_max
     )
     if light.hue is None:
         light.hue = 1

@@ -8,6 +8,7 @@ from uuid import uuid4
 import xbmc
 import xbmcaddon
 import xbmcvfs
+import platform
 
 from tools import xbmclog
 
@@ -52,7 +53,7 @@ class ClientInfo(object):
         elif xbmc.getCondVisibility('system.platform.linux'):
             return "Linux"
         else:
-            return "Unknown"
+            return platform.platform()
 
     def get_device_id(self, reset=False):
 

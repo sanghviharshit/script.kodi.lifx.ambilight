@@ -24,7 +24,7 @@ class HSVRatio:
         else:
             self.v = (self.v + overall_value) / 2
 
-    def hue(self, fullspectrum, bri_min, bri_max):
+    def hue(self, bri_min, bri_max):
         h = int(self.h * 65535)  # on a scale from 0 <-> 65535
         s = int(self.s * 255)
         v = int(self.v * 255)

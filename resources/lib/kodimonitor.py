@@ -14,8 +14,10 @@ class KodiMonitor(xbmc.Monitor):
         xbmc.Monitor.__init__(self)
 
     def onSettingsChanged(self):
-        xbmclog('In onSettingsChanged() {}'.format(self.hue_service.settings))
+        xbmclog('In onSettingsChanged()')
+        self.hue_service.ga.sendEventData("Configurations", "Update")
         self.hue_service.settings.readxml()
+        xbmclog("Updated settings: \n{}".format(self.hue_service.settings))
         self.hue_service.update_controllers()
 
     def onNotification(self, sender, method, data):

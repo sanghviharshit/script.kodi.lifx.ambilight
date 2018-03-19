@@ -58,11 +58,10 @@ class Service(object):
         self.ga = GoogleAnalytics()
 
         try:
-            self.ga.sendEventData("Application", "Startup")
-            self.ga.sendEventData("Version", "OS", platform.platform())
-            self.ga.sendEventData("Version", "Python", platform.python_version())
-            self.ga.sendEventData("Version", "Kodi", xbmc.getInfoLabel('System.BuildVersion'))
-            self.ga.sendEventData("Version", "Addon", self.client_info.get_version())
+            # self.ga.sendEventData("Startup", "OS", platform.platform())
+            # self.ga.sendEventData("Startup", "Python", platform.python_version())
+            # self.ga.sendEventData("Startup", "Kodi", xbmc.getInfoLabel('System.BuildVersion'))
+            self.ga.sendEventData("Startup", "Version", self.client_info.get_version())
         except Exception:
             pass
 
@@ -75,7 +74,7 @@ class Service(object):
         if not self.startup:
             self.startup = self._startup()
 
-        if self.player is None:
+        if self.player == None:
             xbmclog('Could not instantiate player')
             return
         # run() until abortRequested to update ambilight lights
@@ -85,7 +84,8 @@ class Service(object):
 
 
     def _startup(self):
-        self.settings = Settings()
+        self.settings = Settings(self)
+        xbmclog("Current settings: \n{}".format(self.settings))
         # Important: Threads depending on abortRequest will not trigger
         # if profile switch happens more than once.
         self.monitor = kodimonitor.KodiMonitor()
@@ -101,7 +101,7 @@ class Service(object):
                 self.theater_controller.flash_lights()
                 self.static_controller.flash_lights()
         xbmclog("======== SERVICE STARTUP ========")
-        return True
+        return time.time()
 
     def shutdown(self):
         if self.settings:
@@ -116,23 +116,44 @@ class Service(object):
         if not self.ga:
             self.ga = GoogleAnalytics()
 
-        self.ga.sendEventData("Application", "Shutdown")
+        if self.startup:
+            uptime = time.time() - self.startup
+            uptime = int(uptime/60)
+            xbmclog("Shutting down after {} minutes".format(uptime))
+            self.ga.sendEventData("Application", "Shutdown", "Uptime", uptime)
+        else:
+            self.ga.sendEventData("Application", "Shutdown")
 
     def update_controllers(self):
-        self.ambilight_controller = AmbilightController(
-            bridge.get_lights_by_ids(self.settings.ambilight_group.split(',')),
-            self.settings
-        )
+        if (self.ambilight_controller == None
+            or (    self.ambilight_controller != None
+                and set(self.settings.ambilight_group.split(',')) != set(self.ambilight_controller.lights.keys())
+                )
+            ):
+            self.ambilight_controller = AmbilightController(
+                bridge.get_lights_by_ids(self.settings.ambilight_group.split(',')),
+                self.settings
+            )
 
-        self.theater_controller = TheaterController(
-            bridge.get_lights_by_ids(self.settings.theater_group.split(',')),
-            self.settings
-        )
+        if (self.theater_controller == None
+            or (    self.theater_controller != None
+                and set(self.settings.theater_group.split(',')) != set(self.theater_controller.lights.keys())
+                )
+            ):
+            self.theater_controller = TheaterController(
+                bridge.get_lights_by_ids(self.settings.theater_group.split(',')),
+                self.settings
+            )
 
-        self.static_controller = StaticController(
-            bridge.get_lights_by_ids(self.settings.static_group.split(',')),
-            self.settings
-        )
+        if (self.static_controller == None
+            or (    self.static_controller != None
+                and set(self.settings.static_group.split(',')) != set(self.static_controller.lights.keys())
+                )
+            ):
+            self.static_controller = StaticController(
+                bridge.get_lights_by_ids(self.settings.static_group.split(',')),
+                self.settings
+            )
 
         xbmclog(
             'In Hue.update_controllers() instantiated following '
@@ -196,12 +217,11 @@ class Service(object):
                     if(timeSinceLastPing > 300):
                         self.lastMetricPing = time.time()
                         ga = GoogleAnalytics()
-                        ga.sendEventData("Playback", "Playing")
+                        # Keep the session alive
+                        ga.sendEventData("Playback", "Video", "Playing", None, 1)
                     try:
                         pixels = capture.getImage(200)
-                        if len(pixels) > 0 and self.player.playingvideo:
-                            startReadOut = True
-                        if startReadOut:
+                        if len(pixels) > 0:
                             screen = image.Screenshot(
                                 pixels)
                             hsv_ratios = screen.spectrum_hsv(

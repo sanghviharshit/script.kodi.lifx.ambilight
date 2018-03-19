@@ -5,9 +5,11 @@ from tools import notify, xbmclog
 
 
 def multiselect_lights(label, exclude, preselect):
+
     xbmclog('In multiselect_lights(label={}, exclude={}, preselect={})'.format(
                 label, exclude, preselect)
             )
+
     lifx_lights = bridge.get_lights_by_ids()
 
     actual_lights = []
