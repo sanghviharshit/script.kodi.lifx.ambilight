@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-    <addon id="script.kodi.lifx.ambilight" version="1.0.0"
+    <addon id="script.kodi.lifx.ambilight" version="1.0.1"
       name="Lifx Ambilight" provider-name="Harshit Sanghvi">
     <requires>
         <import addon="xbmc.python" version="2.25.0"/>
@@ -15,7 +15,10 @@
           2. Ambilight Group - Change color and brightness of lights based on the current picture frame
           3. Static Group - Turn the light on when playback starts, off when it stops
         </description>
-        <disclaimer lang="en_GB">By using this addon, you take full reponsibility for anything that happens.</disclaimer>
+        <disclaimer lang="en_GB">
+          By using this addon, you take full reponsibility for anything that happens.
+          (Tip: Reset the addon settings and restart Kodi if you get any error after updating)
+        </disclaimer>
         <language>en</language>
         <platform>all</platform>
         <forum>https://github.com/sanghviharshit/script.kodi.lifx.ambilight/issues</forum>
@@ -24,8 +27,8 @@
         <source>https://github.com/sanghviharshit/script.kodi.lifx.ambilight</source>
         <email>hello@sanghviharshit.com</email>
         <news>
-            1.0.0 (2018-03-08)
-            - (Reset the addon settings if you get any error after updating)
+            1.0.1 (2018-03-21) and 1.0.0 (2018-03-08)
+            - Bugfix and better error handling
             - All new version with lots of new features and stability
             - Ported latest code (much better organized) from mpolednik/script.kodi.hue.ambilight with lots of new features (e.g. setup wizard for light groups)
             - Improved algorithm for calculating color and brightness from picture frame for Ambilight
@@ -40,13 +43,13 @@
             <fanart>resources/fanart.jpg</fanart>
             <banner></banner>
             <clearlogo></clearlogo>
-            <screenshot>resources/screenshot-01.jpg</screenshot>
-            <screenshot>resources/screenshot-02.jpg</screenshot>
-            <screenshot>resources/screenshot-03.jpg</screenshot>
-            <screenshot>resources/screenshot-04.jpg</screenshot>
-            <screenshot>resources/screenshot-05.jpg</screenshot>
-            <screenshot>resources/screenshot-06.jpg</screenshot>
-            <screenshot>resources/screenshot-07.jpg</screenshot>
+            <screenshot>resources/screenshot-01.png</screenshot>
+            <screenshot>resources/screenshot-02.png</screenshot>
+            <screenshot>resources/screenshot-03.png</screenshot>
+            <screenshot>resources/screenshot-04.png</screenshot>
+            <screenshot>resources/screenshot-05.png</screenshot>
+            <screenshot>resources/screenshot-06.png</screenshot>
+            <screenshot>resources/screenshot-07.png</screenshot>
         </assets>
     </extension>
     <extension point="xbmc.addon.repository" name="Harshit's Add-on Repository">
