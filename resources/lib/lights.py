@@ -197,7 +197,7 @@ class Light(object):
             errStrings = ga.formatException()
             ga.sendExceptionData(errStrings[0])
             ga.sendEventData("Exception", errStrings[0], errStrings[1])
-            xbmclog("{}}.__repr__() - light={} - Exception - {}".format(self.__class__.__name__, self.name, str(error)))
+            xbmclog("{}}.__repr__() - light={} - Exception - {}".format(self.__class__.__name__, self.name, str(err)))
         return s
 
 class Controller(object):
