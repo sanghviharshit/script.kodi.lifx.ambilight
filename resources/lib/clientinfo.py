@@ -24,7 +24,7 @@ class ClientInfo(object):
 
     def get_addon_name(self):
         # Used for logging
-        return self.addon.getAddonInfo('name').upper()
+        return self.addon.getAddonInfo('name')
 
     def get_version(self):
         return self.addon.getAddonInfo('version')

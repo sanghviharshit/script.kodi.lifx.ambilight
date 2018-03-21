@@ -27,8 +27,15 @@ def discover():
 
 def get_lights(refresh=False):
     global lights_cache
-    if lights_cache == None or len(lights_cache) == 0 or refresh == True:
+    sendMetrics = False
+    total_lights = 0
+
+    if lights_cache is None or refresh == True:
+        sendMetrics = True
+
+    if lights_cache is None or len(lights_cache) == 0 or refresh == True:
         try:
+            lan.discover_devices()
             lights_cache = lan.get_lights()
             xbmclog("get_lights(refresh={}) - Found {} Lifx lights".format(refresh, str(len(lights_cache))))
         except WorkflowException as error:
@@ -37,7 +44,8 @@ def get_lights(refresh=False):
             ga.sendEventData("Exception", errStrings[0], errStrings[1])
             xbmclog("get_lights(refresh={}) - Exception - {}".format(refresh,str(error)))
 
-        if lights_cache != None:
+        if lights_cache != None and len(lights_cache) > 0:
+            sendMetrics = True
             products_list = {}
             for lifx_light in lights_cache:
                 product = None
@@ -64,10 +72,11 @@ def get_lights(refresh=False):
             for product, count in products_list.items():
                 # Collect metrics to help prioritize support for more device types
                 ga.sendEventData("Metrics", "Devices", product, count, 1)   # Category, Action, Label, Value, Non-interactive
-            ga.sendEventData("Metrics", "Devices", "Total", len(lights_cache), 1)
-        else:
-            ga.sendEventData("Metrics", "Devices", "Total", 0, 1)
 
+        if lights_cache is not None:
+            total_lights = len(lights_cache)
+        if sendMetrics:
+            ga.sendEventData("Metrics", "Devices", "Total", total_lights, 1)
     else:
         xbmclog("get_lights(refresh={}) - Returning {} cached Lifx lights".format(refresh, str(len(lights_cache))))
     return lights_cache

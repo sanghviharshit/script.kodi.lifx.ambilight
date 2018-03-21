@@ -21,7 +21,12 @@ class Settings():
         for k, v in self.__dict__.items():
             if k == "ambilight_group" or k == "theater_group" or k == "theater_subgroup" or k == "static_group":
                 v = len(str(v).split(','))
-            self.hue.ga.sendEventData("Initial Settings", k, v, ni=1)
+            if k == "hue" or k == "readonce":
+                continue
+            try:
+                self.hue.ga.sendEventData("Settings", "Default", k, int(v), ni=1)
+            except Exception:
+                pass
         self.readonce = True
 
 
@@ -49,7 +54,10 @@ class Settings():
             __addon__.setSetting(k, str(v))
             if k == "ambilight_group" or k == "theater_group" or k == "theater_subgroup" or k == "static_group":
                 v = len(str(v).split(','))
-            self.hue.ga.sendEventData("Updated Settings", k, str(v))
+            try:
+                self.hue.ga.sendEventData("Settings","Update", k, int(v))
+            except Exception:
+                pass
 
     def readxml(self):
         global __addon__

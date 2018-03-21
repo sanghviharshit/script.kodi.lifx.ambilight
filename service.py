@@ -36,7 +36,8 @@ if __name__ == "__main__":
         if not (hasattr(error, 'quiet') and error.quiet):
             ga = GoogleAnalytics()
             errStrings = ga.formatException()
-            ga.sendEventData("Exception", errStrings[0], errStrings[1])
+            ga.sendExceptionData(errStrings[0])
+            ga.sendEventData("Crash", errStrings[0], errStrings[1])
 
         # Display the *original* exception
         traceback.print_exc()

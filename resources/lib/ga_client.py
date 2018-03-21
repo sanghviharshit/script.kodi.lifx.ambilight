@@ -28,9 +28,10 @@ def log_error(errors=(Exception, )):
                     ga = GoogleAnalytics()
                     errStrings = ga.formatException()
                     ga.sendEventData("Exception", errStrings[0], errStrings[1], 0, True)
-                log.exception(error)
-                log.error("log_error: %s \n args: %s \n kwargs: %s",
-                          func.__name__, args, kwargs)
+                # log.exception(error)
+                # log.error("log_error: %s \n args: %s \n kwargs: %s",
+                          # func.__name__, args, kwargs)
+                xbmclog("log_error: {} \n args: {} \n kwargs: {}".format(func.__name__, args, kwargs))
                 raise
         return wrapper
     return decorator
@@ -38,14 +39,15 @@ def log_error(errors=(Exception, )):
 # main GA class
 class GoogleAnalytics():
 
-    testing = True
+    testing = False
 
     def __init__(self):
 
         client_info = clientinfo.ClientInfo()
         self.version = client_info.get_version()
+        self.app_name = client_info.get_addon_name()
         self.app_id = client_info.get_addon_id()
-        self.app_iid = "python-{}".format(python_version())
+        self.app_iid = "python-{}.kodi-{}".format(python_version(), xbmc.getInfoLabel('System.BuildVersion'))
         self.device_id = client_info.get_device_id()
 
         # user agent string, used for OS and Kodi version identification
@@ -127,7 +129,8 @@ class GoogleAnalytics():
             #log.error(str(fileStackTrace))
         except Exception as e:
             fileStackTrace = None
-            log.error(e)
+            # log.error(e)
+            xbmclog(e)
 
         errorType = "NA"
         errorFile = "NA"
@@ -154,11 +157,14 @@ class GoogleAnalytics():
         # all the data we can send to Google Analytics
         data = {}
         data['v'] = '1'
-        data['tid'] = 'UA-83116503-2' # tracking id, this is the account ID
+        if self.testing:
+            data['tid'] = 'UA-61310573-2' # tracking id, this is the account ID
+        else:
+            data['tid'] = 'UA-83116503-2' # tracking id, this is the account ID
 
-        data['ds'] = 'plugin' # data source
+        data['ds'] = 'kodi' # data source
 
-        data['an'] = 'Lifx4Kodi' # App Name
+        data['an'] = self.app_name # App Name
         data['aid'] = self.app_id # App ID
         data['av'] = self.version # App Version
         data['aiid'] = self.app_iid # App installer ID
@@ -185,11 +191,14 @@ class GoogleAnalytics():
         self.sendData(data)
 
     def sendExceptionData(self, exceptionDescription, isExceptionFatal=False):
+
         data = self.getBaseData()
         # The type of hit. Must be one of 'pageview', 'screenview', 'event', 'transaction', 'item', 'social', 'exception', 'timing'.
         data['t'] = 'exception' # action type
         data['exd'] = exceptionDescription
         data['exf'] = isExceptionFatal
+
+        self.sendData(data)
 
     def sendEventData(self, eventCategory, eventAction, eventLabel=None, eventValue=None, ni=0, throttle=False):
 
@@ -222,19 +231,20 @@ class GoogleAnalytics():
         if(Settings.getSetting('metric_logging') == "false"):
             return
 
-        if (self.testing):
-            xbmclog("GA: {}".format(pformat(data)))
+        # if (self.testing):
+            # xbmclog("GA: {}".format(pformat(data)))
 
-        if(self.testing):
-            url = "https://www.google-analytics.com/debug/collect" # test URL
-        else:
-            url = "https://www.google-analytics.com/collect" # prod URL
+        # if(self.testing):
+        #     url = "https://www.google-analytics.com/debug/collect" # test URL
+        # else:
+        url = "https://www.google-analytics.com/collect" # prod URL
 
         try:
             r = requests.post(url, data)
         except Exception as error:
-            log.error(error)
+            # log.error(error)
+            xbmclog(error)
             r = None
 
-        if(self.testing and r != None):
-            xbmclog("GA: {}".format(r.text.encode('utf-8')))
+        # if(self.testing and r != None):
+            # xbmclog("GA: {}".format(r.text.encode('utf-8')))

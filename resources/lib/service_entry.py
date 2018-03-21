@@ -46,24 +46,20 @@ class Service(object):
 
     def __init__(self):
         self.client_info = clientinfo.ClientInfo()
-        self.addon_name = self.client_info.get_addon_name()
 
         # Initial logging
-        xbmclog("======== START {} ========".format(self.addon_name))
+        xbmclog("======== START {} ========".format(self.client_info.get_addon_name()))
         xbmclog("Python Version: {}".format(sys.version))
         xbmclog("Platform: {}".format(self.client_info.get_platform()))
         xbmclog("KODI Version: {}".format(xbmc.getInfoLabel('System.BuildVersion')))
-        xbmclog("{} Version: {}".format(self.addon_name, self.client_info.get_version()))
+        xbmclog("{} Version: {}".format(self.client_info.get_addon_name(), self.client_info.get_version()))
 
         self.ga = GoogleAnalytics()
 
         try:
-            # self.ga.sendEventData("Startup", "OS", platform.platform())
-            # self.ga.sendEventData("Startup", "Python", platform.python_version())
-            # self.ga.sendEventData("Startup", "Kodi", xbmc.getInfoLabel('System.BuildVersion'))
-            self.ga.sendEventData("Startup", "Version", self.client_info.get_version())
-        except Exception:
-            pass
+            self.ga.sendEventData("Application", "Startup")
+        except Exception as error:
+            xbmclog(error)
 
         self.connected = False
 
@@ -93,13 +89,14 @@ class Service(object):
         self.player = player.Player()
         self.player.hue_service = self
 
-        if self.settings.ambilight_group or self.settings.theater_group or self.settings.static_group:
-            self.update_controllers()
 
-            if self.settings.misc_initialflash:
-                self.ambilight_controller.flash_lights()
-                self.theater_controller.flash_lights()
-                self.static_controller.flash_lights()
+        self.update_controllers()
+
+        if self.settings.misc_initialflash:
+            self.ambilight_controller.flash_lights()
+            self.theater_controller.flash_lights()
+            self.static_controller.flash_lights()
+
         xbmclog("======== SERVICE STARTUP ========")
         return time.time()
 
@@ -120,9 +117,10 @@ class Service(object):
             uptime = time.time() - self.startup
             uptime = int(uptime/60)
             xbmclog("Shutting down after {} minutes".format(uptime))
-            self.ga.sendEventData("Application", "Shutdown", "Uptime", uptime)
-        else:
-            self.ga.sendEventData("Application", "Shutdown")
+            # TODO - Change to custom metrics
+            self.ga.sendEventData("Metrics", "Uptime", eventValue=uptime)
+
+        self.ga.sendEventData("Application", "Shutdown")
 
     def update_controllers(self):
         if (self.ambilight_controller == None
