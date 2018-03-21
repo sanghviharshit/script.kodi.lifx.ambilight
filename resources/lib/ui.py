@@ -4,14 +4,14 @@ import bridge
 from tools import notify, xbmclog
 
 
-def multiselect_lights(bridge_ip, bridge_user, label, exclude,
-                       preselect):
-    xbmclog('In multiselect_lights(bridge_ip={}, bridge_user={}, '
-            'label={}, exclude={}, preselect={})'.format(
-                bridge_ip, bridge_user, label, exclude, preselect)
+def multiselect_lights(label, exclude, preselect):
+
+    xbmclog('In multiselect_lights(label={}, exclude={}, preselect={})'.format(
+                label, exclude, preselect)
             )
-    lifx_lights = bridge.get_lights_by_ids(bridge_ip, bridge_user)
-    
+
+    lifx_lights = bridge.get_lights_by_ids()
+
     actual_lights = []
     items = []
     preselect_items = []
@@ -35,15 +35,10 @@ def multiselect_lights(bridge_ip, bridge_user, label, exclude,
         return ''
 
 
-def discover_hue_bridge(hue):
+def discover_lights(hue):
     notify("Lifx Device Discovery", "Starting")
-    hue_ip = bridge.discover()
-    if hue_ip is not None:
-        # notify("Hue Bridge Discovery", "Found bridge at: %s" % hue_ip)
-        username = bridge.create_user(hue_ip)
-        hue.settings.update(bridge_ip=hue_ip)
-        hue.settings.update(bridge_user=username)
-        hue.settings.update(connected="true")
+    num_lights = bridge.discover()
+    if num_lights > 0:
         hue.connected = True
         # notify("Hue Bridge Discovery", "Finished")
     else:

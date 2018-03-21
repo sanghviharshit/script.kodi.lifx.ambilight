@@ -6,12 +6,16 @@ import clientinfo
 import hashlib
 import xbmc
 import time
+from pprint import pprint, pformat
+from platform import python_version
+
+from settings import Settings
+from tools import xbmclog
 
 # for info on the metrics that can be sent to Google Analytics
 # https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters#events
 
 logEventHistory = {}
-from tools import configs
 
 # wrap a function to catch, log and then re throw an exception
 def log_error(errors=(Exception, )):
@@ -23,10 +27,11 @@ def log_error(errors=(Exception, )):
                 if not (hasattr(error, 'quiet') and error.quiet):
                     ga = GoogleAnalytics()
                     errStrings = ga.formatException()
-                    ga.sendEventData("Exception", errStrings[0], errStrings[1], True)
-                log.exception(error)
-                log.error("log_error: %s \n args: %s \n kwargs: %s",
-                          func.__name__, args, kwargs)
+                    ga.sendEventData("Exception", errStrings[0], errStrings[1], 0, True)
+                # log.exception(error)
+                # log.error("log_error: %s \n args: %s \n kwargs: %s",
+                          # func.__name__, args, kwargs)
+                xbmclog("log_error: {} \n args: {} \n kwargs: {}".format(func.__name__, args, kwargs))
                 raise
         return wrapper
     return decorator
@@ -40,6 +45,9 @@ class GoogleAnalytics():
 
         client_info = clientinfo.ClientInfo()
         self.version = client_info.get_version()
+        self.app_name = client_info.get_addon_name()
+        self.app_id = client_info.get_addon_id()
+        self.app_iid = "python-{}.kodi-{}".format(python_version(), xbmc.getInfoLabel('System.BuildVersion'))
         self.device_id = client_info.get_device_id()
 
         # user agent string, used for OS and Kodi version identification
@@ -64,6 +72,7 @@ class GoogleAnalytics():
         self.screen_height = xbmc.getInfoLabel("System.ScreenHeight")
         self.screen_width = xbmc.getInfoLabel("System.ScreenWidth")
 
+        # self.language = xbmc.getLanguage(xbmc.ENGLISH_NAME)
         self.lang = xbmc.getInfoLabel("System.Language")
 
     def getUserAgentOS(self):
@@ -81,7 +90,7 @@ class GoogleAnalytics():
         elif xbmc.getCondVisibility('system.platform.linux'):
             return "Linux"
         else:
-            return "Other"
+            return self.client_info.get_platform()
 
     def formatException(self):
 
@@ -120,7 +129,8 @@ class GoogleAnalytics():
             #log.error(str(fileStackTrace))
         except Exception as e:
             fileStackTrace = None
-            log.error(e)
+            # log.error(e)
+            xbmclog(e)
 
         errorType = "NA"
         errorFile = "NA"
@@ -147,14 +157,17 @@ class GoogleAnalytics():
         # all the data we can send to Google Analytics
         data = {}
         data['v'] = '1'
-        data['tid'] = 'UA-83116503-2' # tracking id, this is the account ID
+        if self.testing:
+            data['tid'] = 'UA-61310573-2' # tracking id, this is the account ID
+        else:
+            data['tid'] = 'UA-83116503-2' # tracking id, this is the account ID
 
-        data['ds'] = 'plugin' # data source
+        data['ds'] = 'kodi' # data source
 
-        data['an'] = 'Lifx4Kodi' # App Name
-        data['aid'] = '1' # App ID
+        data['an'] = self.app_name # App Name
+        data['aid'] = self.app_id # App ID
         data['av'] = self.version # App Version
-        #data['aiid'] = '1.1' # App installer ID
+        data['aiid'] = self.app_iid # App installer ID
 
         data['cid'] = self.device_id # Client ID
         #data['uid'] = self.user_name # User ID
@@ -177,7 +190,17 @@ class GoogleAnalytics():
 
         self.sendData(data)
 
-    def sendEventData(self, eventCategory, eventAction, eventLabel=None, throttle=False):
+    def sendExceptionData(self, exceptionDescription, isExceptionFatal=False):
+
+        data = self.getBaseData()
+        # The type of hit. Must be one of 'pageview', 'screenview', 'event', 'transaction', 'item', 'social', 'exception', 'timing'.
+        data['t'] = 'exception' # action type
+        data['exd'] = exceptionDescription
+        data['exf'] = isExceptionFatal
+
+        self.sendData(data)
+
+    def sendEventData(self, eventCategory, eventAction, eventLabel=None, eventValue=None, ni=0, throttle=False):
 
         # if throttling is enabled then only log the same event every 5 min
         if(throttle):
@@ -191,33 +214,37 @@ class GoogleAnalytics():
             logEventHistory[throttleKey] = time.time()
 
         data = self.getBaseData()
+        # https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters#t
         data['t'] = 'event' # action type
-        data['ec'] = eventCategory # Event Category
-        data['ea'] = eventAction # Event Action
-
+        data['ec'] = eventCategory # Event Category. Required
+        data['ea'] = eventAction # Event Action. Required.
         if(eventLabel != None):
             data['el'] = eventLabel # Event Label
+        if str(eventValue).isdigit():
+            data['ev'] = eventValue # Event value (MUST be an integer)
+        data['ni'] = ni # Specifies that a hit be considered non-interactive. (MUST be boolean 0 or 1)
 
         self.sendData(data)
 
     def sendData(self, data):
 
-        if(configs('metric_logging') == "false"):
+        if(Settings.getSetting('metric_logging') == "false"):
             return
 
-        if (self.testing):
-            xbmclog("GA: {}".format(str(data)))
+        # if (self.testing):
+            # xbmclog("GA: {}".format(pformat(data)))
 
-        if(self.testing):
-            url = "https://www.google-analytics.com/debug/collect" # test URL
-        else:
-            url = "https://www.google-analytics.com/collect" # prod URL
+        # if(self.testing):
+        #     url = "https://www.google-analytics.com/debug/collect" # test URL
+        # else:
+        url = "https://www.google-analytics.com/collect" # prod URL
 
         try:
             r = requests.post(url, data)
         except Exception as error:
-            log.error(error)
+            # log.error(error)
+            xbmclog(error)
             r = None
 
-        if(self.testing and r != None):
-            xbmclog("GA: {}".format(r.text.encode('utf-8')))
+        # if(self.testing and r != None):
+            # xbmclog("GA: {}".format(r.text.encode('utf-8')))

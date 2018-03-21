@@ -8,6 +8,7 @@ from uuid import uuid4
 import xbmc
 import xbmcaddon
 import xbmcvfs
+import platform
 
 from tools import xbmclog
 
@@ -23,7 +24,7 @@ class ClientInfo(object):
 
     def get_addon_name(self):
         # Used for logging
-        return self.addon.getAddonInfo('name').upper()
+        return self.addon.getAddonInfo('name')
 
     def get_version(self):
         return self.addon.getAddonInfo('version')
@@ -52,7 +53,7 @@ class ClientInfo(object):
         elif xbmc.getCondVisibility('system.platform.linux'):
             return "Linux"
         else:
-            return "Unknown"
+            return platform.platform()
 
     def get_device_id(self, reset=False):
 

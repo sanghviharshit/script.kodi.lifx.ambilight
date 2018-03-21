@@ -1,8 +1,9 @@
 import lights
+
 from tools import xbmclog
 
-
 class AmbilightController(lights.Controller):
+
     def __init__(self, *args, **kwargs):
         super(AmbilightController, self).__init__(*args, **kwargs)
 
@@ -15,7 +16,7 @@ class AmbilightController(lights.Controller):
                     'dimming ambilight group')
             self.set_state(
                 bri=self.settings.ambilight_start_dim,
-                force_on=self.settings.force_light_on,
+                # force_on=self.settings.force_light_on,
             )
 
     def on_playback_pause(self):
@@ -26,11 +27,11 @@ class AmbilightController(lights.Controller):
                 bri = self.settings.ambilight_pause_bri
                 self.set_state(
                     bri=bri,
-                    force_on=self.settings.force_light_on,
+                    # force_on=self.settings.force_light_on,
                 )
             else:
                 self.restore_initial_state(
-                    force_on=self.settings.force_light_on,
+                    # force_on=self.settings.force_light_on,
                 )
 
     def on_playback_stop(self):
@@ -38,15 +39,18 @@ class AmbilightController(lights.Controller):
             xbmclog('In AmbilightController.on_playback_stop() '
                     'undimming ambilight group')
             if self.settings.ambilight_stop_bri_override:
+                self.restore_initial_state(
+                    force_on=True
+                )
                 self.set_state(
                     bri=self.settings.ambilight_stop_bri,
-                    force_on=self.settings.force_light_on,
+                    # force_on=self.settings.force_light_on,
                 )
             else:
                 self.restore_initial_state(
-                    force_on=self.settings.force_light_on,
+                    # force_on=self.settings.force_light_on,
                 )
         else:
             self.restore_initial_state(
-                    force_on=self.settings.force_light_on,
+                    # force_on=self.settings.force_light_on,
             )

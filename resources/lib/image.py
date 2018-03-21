@@ -24,24 +24,7 @@ class HSVRatio:
         else:
             self.v = (self.v + overall_value) / 2
 
-    def hue(self, fullspectrum, bri_min, bri_max):
-        """
-        if not fullspectrum:
-            if self.h > 0.065 and self.h < 0.19:
-                self.h = self.h * 2.32
-            elif self.s > 0.01:
-                if self.h < 0.5:
-                    # yellow-green correction
-                    self.h = self.h * 1.17
-                    # cyan-green correction
-                    if self.h > self.cyan_min:
-                        self.h = self.cyan_min
-                else:
-                    # cyan-blue correction
-                    if self.h < self.cyan_max:
-                        self.h = self.cyan_max
-        """
-
+    def hue(self, bri_min, bri_max):
         h = int(self.h * 65535)  # on a scale from 0 <-> 65535
         s = int(self.s * 255)
         v = int(self.v * 255)
@@ -54,7 +37,6 @@ class HSVRatio:
     def __repr__(self):
         return 'h: %s s: %s v: %s ratio: %s hue_count: %s' % (
             self.h, self.s, self.v, self.ratio, self.hue_count)
-
 
 class Screenshot:
 

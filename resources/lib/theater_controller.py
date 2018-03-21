@@ -1,6 +1,6 @@
 import lights
-from tools import xbmclog
 
+from tools import xbmclog
 
 class TheaterController(lights.Controller):
     def __init__(self, *args, **kwargs):
@@ -38,7 +38,7 @@ class TheaterController(lights.Controller):
             sat=sat,
             bri=bri,
             kel=kel,
-            force_on=self.settings.force_light_on,
+            # force_on=self.settings.force_light_on,
         )
 
     def on_playback_pause(self):
@@ -66,12 +66,12 @@ class TheaterController(lights.Controller):
                     bri=bri,
                     kel=kel,
                     lights=self.settings.theater_subgroup.split(','),
-                    force_on=self.settings.force_light_on,
+                    # force_on=self.settings.force_light_on,
                 )
             else:
                 self.restore_initial_state(
                     lights=self.settings.theater_subgroup.split(','),
-                    force_on=self.settings.force_light_on,
+                    # force_on=self.settings.force_light_on,
                 )
         else:
             xbmclog('In TheaterController.on_playback_pause() '
@@ -82,11 +82,11 @@ class TheaterController(lights.Controller):
                     sat=sat,
                     bri=bri,
                     kel=kel,
-                    force_on=self.settings.force_light_on,
+                    # force_on=self.settings.force_light_on,
                 )
             else:
                 self.restore_initial_state(
-                    force_on=self.settings.force_light_on,
+                    # force_on=self.settings.force_light_on,
                 )
 
     def on_playback_stop(self):
@@ -112,9 +112,9 @@ class TheaterController(lights.Controller):
                 sat=sat,
                 bri=bri,
                 kel=kel,
-                force_on=self.settings.force_light_on,
+                # force_on=self.settings.force_light_on,
             )
         else:
             self.restore_initial_state(
-                force_on=self.settings.force_light_on,
+                # force_on=self.settings.force_light_on,
             )

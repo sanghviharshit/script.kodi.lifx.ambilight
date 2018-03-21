@@ -8,10 +8,7 @@
     <string id="1130">Setup Ambilight Lights</string>
     <string id="1140">Setup Static Lights</string>
 
-    <string id="1200">Bridge</string>
     <string id="1210">Discover Lifx Devices</string>
-    <string id="1220">Bridge IP</string>
-    <string id="1230">Bridge User</string>
 
     <string id="1400">WARNING: RESET ALL SETTINGS</string>
     <string id="1410">Reset all settings (requires disable/re-enable)</string>

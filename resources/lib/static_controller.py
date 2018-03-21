@@ -1,6 +1,7 @@
 import random
 
 import lights
+
 from tools import xbmclog
 
 
@@ -38,6 +39,7 @@ class StaticController(lights.Controller):
             bri=bri,
             kel=kel,
             on=True,
+            force_on = True
         )
 
     def on_playback_pause(self):
@@ -45,9 +47,12 @@ class StaticController(lights.Controller):
                 'turning off static group')
         self.set_state(
             on=False,
+            force_on = True
         )
 
     def on_playback_stop(self):
         xbmclog('In StaticController.on_playback_pause() '
                 'restoring static group')
-        self.restore_initial_state()
+        self.restore_initial_state(
+            force_on = True
+        )

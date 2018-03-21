@@ -2,6 +2,7 @@ from threading import Event
 import os
 import sys
 import platform
+import time
 
 import xbmc
 
@@ -41,60 +42,46 @@ class Service(object):
     monitor = None
     player = None
 
+    lastMetricPing = time.time()
+
     def __init__(self):
         self.client_info = clientinfo.ClientInfo()
-        self.addon_name = self.client_info.get_addon_name()
 
         # Initial logging
-        xbmclog("======== START {} ========".format(self.addon_name))
+        xbmclog("======== START {} ========".format(self.client_info.get_addon_name()))
         xbmclog("Python Version: {}".format(sys.version))
         xbmclog("Platform: {}".format(self.client_info.get_platform()))
         xbmclog("KODI Version: {}".format(xbmc.getInfoLabel('System.BuildVersion')))
-        xbmclog("{} Version: {}".format(self.addon_name, self.client_info.get_version()))
+        xbmclog("{} Version: {}".format(self.client_info.get_addon_name(), self.client_info.get_version()))
 
         self.ga = GoogleAnalytics()
 
         try:
             self.ga.sendEventData("Application", "Startup")
-            self.ga.sendEventData("Version", "OS", platform.platform())
-            self.ga.sendEventData("Version", "Python", platform.python_version())
-            self.ga.sendEventData("Version", "Kodi", xbmc.getInfoLabel('System.BuildVersion'))
-            self.ga.sendEventData("Version", "Addon", self.client_info.get_version())
-        except Exception:
-            pass
+        except Exception as error:
+            xbmclog(error)
 
         self.connected = False
 
-    def service_entry_point(self, args):
-        try:
-            params = dict(arg.split("=") for arg in args.split("&"))
-        except Exception:
-            params = {}
+    def service_entry_point(self):
 
-        xbmclog(
-            'In Service.service_entry_point() '
-            'params={}'.format(
-                params)
-            )
+        xbmclog('In Service.service_entry_point()')
 
-        if params == {}:
-            if not self.startup:
-                self.startup = self._startup()
+        if not self.startup:
+            self.startup = self._startup()
 
-            if self.player is None:
-                xbmclog('Could not instantiate player')
-                return
-            # run() until abortRequested to update ambilight lights
-            self.run()
-            # Kodi requested abort
-            self.shutdown()
-        else:
-            # not yet implemented
-            pass
+        if self.player == None:
+            xbmclog('Could not instantiate player')
+            return
+        # run() until abortRequested to update ambilight lights
+        self.run()
+        # Kodi requested abort
+        self.shutdown()
 
 
     def _startup(self):
-        self.settings = Settings()
+        self.settings = Settings(self)
+        xbmclog("Current settings: \n{}".format(self.settings))
         # Important: Threads depending on abortRequest will not trigger
         # if profile switch happens more than once.
         self.monitor = kodimonitor.KodiMonitor()
@@ -102,61 +89,69 @@ class Service(object):
         self.player = player.Player()
         self.player.hue_service = self
 
-        # if there's a bridge IP, try to talk to it.
-        if self.settings.bridge_ip not in ["-", "", None]:
-            result = bridge.user_exists(
-                self.settings.bridge_ip,
-                self.settings.bridge_user
-            )
-            if result:
-                self.connected = True
 
-        if self.connected:
-            self.update_controllers()
+        self.update_controllers()
 
-            if self.settings.misc_initialflash:
-                self.ambilight_controller.flash_lights()
-                self.theater_controller.flash_lights()
-                self.static_controller.flash_lights()
+        if self.settings.misc_initialflash:
+            self.ambilight_controller.flash_lights()
+            self.theater_controller.flash_lights()
+            self.static_controller.flash_lights()
+
         xbmclog("======== SERVICE STARTUP ========")
-        return True
+        return time.time()
 
     def shutdown(self):
-        del self.settings
-        del self.monitor
-        del self.player
+        if self.settings:
+            del self.settings
+        if self.monitor:
+            del self.monitor
+        if self.player:
+            del self.player
 
         xbmclog("======== SERVICE SHUTDOWN ========")
 
-        if self.ga == None:
+        if not self.ga:
             self.ga = GoogleAnalytics()
+
+        if self.startup:
+            uptime = time.time() - self.startup
+            uptime = int(uptime/60)
+            xbmclog("Shutting down after {} minutes".format(uptime))
+            # TODO - Change to custom metrics
+            self.ga.sendEventData("Metrics", "Uptime", eventValue=uptime)
 
         self.ga.sendEventData("Application", "Shutdown")
 
     def update_controllers(self):
-        self.ambilight_controller = AmbilightController(
-            bridge.get_lights_by_ids(
-                self.settings.bridge_ip,
-                self.settings.bridge_user,
-                self.settings.ambilight_group.split(',')),
-            self.settings
-        )
+        if (self.ambilight_controller == None
+            or (    self.ambilight_controller != None
+                and set(self.settings.ambilight_group.split(',')) != set(self.ambilight_controller.lights.keys())
+                )
+            ):
+            self.ambilight_controller = AmbilightController(
+                bridge.get_lights_by_ids(self.settings.ambilight_group.split(',')),
+                self.settings
+            )
 
-        self.theater_controller = TheaterController(
-            bridge.get_lights_by_ids(
-                self.settings.bridge_ip,
-                self.settings.bridge_user,
-                self.settings.theater_group.split(',')),
-            self.settings
-        )
+        if (self.theater_controller == None
+            or (    self.theater_controller != None
+                and set(self.settings.theater_group.split(',')) != set(self.theater_controller.lights.keys())
+                )
+            ):
+            self.theater_controller = TheaterController(
+                bridge.get_lights_by_ids(self.settings.theater_group.split(',')),
+                self.settings
+            )
 
-        self.static_controller = StaticController(
-            bridge.get_lights_by_ids(
-                self.settings.bridge_ip,
-                self.settings.bridge_user,
-                self.settings.static_group.split(',')),
-            self.settings
-        )
+        if (self.static_controller == None
+            or (    self.static_controller != None
+                and set(self.settings.static_group.split(',')) != set(self.static_controller.lights.keys())
+                )
+            ):
+            self.static_controller = StaticController(
+                bridge.get_lights_by_ids(self.settings.static_group.split(',')),
+                self.settings
+            )
 
         xbmclog(
             'In Hue.update_controllers() instantiated following '
@@ -214,11 +209,17 @@ class Service(object):
                 startReadOut = False
                 vals = {}
                 if self.player.playingvideo:  # only if there's actually video
+                    # ping metrics server to keep sessions alive while playing
+                    # ping every 5 min
+                    timeSinceLastPing = time.time() - self.lastMetricPing
+                    if(timeSinceLastPing > 300):
+                        self.lastMetricPing = time.time()
+                        ga = GoogleAnalytics()
+                        # Keep the session alive
+                        ga.sendEventData("Playback", "Video", "Playing", None, 1)
                     try:
                         pixels = capture.getImage(200)
-                        if len(pixels) > 0 and self.player.playingvideo:
-                            startReadOut = True
-                        if startReadOut:
+                        if len(pixels) > 0:
                             screen = image.Screenshot(
                                 pixels)
                             hsv_ratios = screen.spectrum_hsv(

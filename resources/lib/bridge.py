@@ -1,133 +1,92 @@
-# import socket
 import time
 
 import lights
-# import tools
 
 from lifxlan import *
 from tools import *
 from ga_client import GoogleAnalytics
 
-lan = LifxLAN()
-
-
-
-"""
-try:
-    import requests
-except ImportError:
-    tools.notify("Kodi Hue", "ERROR: Could not import Python requests")
-"""
-
 # TODO - clean up, remove bridge ip, user references
 
-lights_cache = None
+lan = LifxLAN()
 ga = GoogleAnalytics()
 
-def user_exists(bridge_ip, bridge_user, notify=True):
-    return True
-    """
-    req = requests.get('http://{}/api/{}/config'.format(
-        bridge_ip, bridge_user))
-    res = req.json()
-
-    success = False
-    try:
-        success = bridge_user in res['whitelist']
-    except KeyError:
-        success = False
-
-    if notify:
-        import tools
-        if success:
-            tools.notify("Kodi Hue", "Connected")
-        else:
-            tools.notify("Kodi Hue", "Could not connect to bridge")
-
-    return success
-    """
+lights_cache = None
 
 def discover():
     show_busy_dialog()
-    lifx_lights = get_lights("127.0.0.1", "kodi", refresh=True)
+    lifx_lights = get_lights(refresh=True)
     if lifx_lights and len(lifx_lights) > 0:
-      xbmclog("discover() - Found {0} Lifx lights".format(str(len(lifx_lights))))
-      notify("Kodi Lifx", "Found {0} Lifx lights".format(str(len(lifx_lights))))
+        xbmclog("discover() - Found {0} Lifx lights".format(str(len(lifx_lights))))
+        notify("Kodi Lifx", "Found {0} Lifx lights".format(str(len(lifx_lights))))
     else:
-      xbmclog("discover() - No Lifx lights found")
-      notify("Kodi Lifx", "No Lifx lights found")
+        xbmclog("discover() - No Lifx lights found")
+        notify("Kodi Lifx", "No Lifx lights found")
     hide_busy_dialog()
-    return "127.0.0.1"
+    return len(lifx_lights)
 
-    """
-    bridge_ip = _discover_upnp()
-    if bridge_ip is None:
-        bridge_ip = _discover_nupnp()
-
-    return bridge_ip
-    """
-
-
-def create_user(bridge_ip, notify=True):
-    return "kodi"
-
-    """
-    device = 'kodi#ambilight'
-    data = '{{"devicetype": "{}"}}'.format(device)
-
-    res = 'link button not pressed'
-    while 'link button not pressed' in res:
-        if notify:
-            import tools
-            tools.notify('Kodi Hue', 'Press link button on bridge')
-        req = requests.post('http://{}/api'.format(bridge_ip), data=data)
-        res = req.text
-        time.sleep(3)
-
-    res = req.json()
-    username = res[0]['success']['username']
-
-    return username
-    """
-
-
-def get_lights(bridge_ip, username, refresh=False):
-    # return get_lights_by_ids(bridge_ip, username)
+def get_lights(refresh=False):
     global lights_cache
-    if lights_cache == None or len(lights_cache) == 0 or refresh == True:
+    sendMetrics = False
+    total_lights = 0
+
+    if lights_cache is None or refresh == True:
+        sendMetrics = True
+
+    if lights_cache is None or len(lights_cache) == 0 or refresh == True:
         try:
+            lan.discover_devices()
             lights_cache = lan.get_lights()
             xbmclog("get_lights(refresh={}) - Found {} Lifx lights".format(refresh, str(len(lights_cache))))
         except WorkflowException as error:
             errStrings = ga.formatException()
+            ga.sendExceptionData(errStrings[0])
             ga.sendEventData("Exception", errStrings[0], errStrings[1])
             xbmclog("get_lights(refresh={}) - Exception - {}".format(refresh,str(error)))
+
+        if lights_cache != None and len(lights_cache) > 0:
+            sendMetrics = True
+            products_list = {}
+            for lifx_light in lights_cache:
+                product = None
+                product_name = None
+                try:
+                    lifx_light.refresh()
+                    product = lifx_light.get_product()
+                    product_name = lifx_light.get_product_name()
+                except WorkflowException as error:
+                    errStrings = ga.formatException()
+                    ga.sendExceptionData(errStrings[0])
+                    ga.sendEventData("Exception", errStrings[0], errStrings[1])
+                    xbmclog("Exception - {}".format(str(error)))
+
+                product_str = "{}".format(product)
+                if product_name != None:
+                    product_str += " ({})".format(product_name)
+                try:
+                    products_list[product_str] += 1
+                except KeyError:
+                    products_list[product_str] = 1
+
+            xbmclog("Product list: {}".format(products_list))
+            for product, count in products_list.items():
+                # Collect metrics to help prioritize support for more device types
+                ga.sendEventData("Metrics", "Devices", product, count, 1)   # Category, Action, Label, Value, Non-interactive
+
+        if lights_cache is not None:
+            total_lights = len(lights_cache)
+        if sendMetrics:
+            ga.sendEventData("Metrics", "Devices", "Total", total_lights, 1)
     else:
         xbmclog("get_lights(refresh={}) - Returning {} cached Lifx lights".format(refresh, str(len(lights_cache))))
     return lights_cache
 
-def get_lights_by_ids(bridge_ip, username, light_ids=None):
-    """
-    req = requests.get('http://{}/api/{}/lights'.format(bridge_ip, username))
-    res = req.json()
-
-    if light_ids is None:
-        light_ids = res.keys()
-
-    if light_ids == ['']:
-        return {}
-
-    found = {}
-    for light_id in light_ids:
-        found[light_id] = lights.Light(bridge_ip, username, light_id,
-                                       res[light_id])
-   return found
-   """
+def get_lights_by_ids(light_ids=None):
     show_busy_dialog()
     found = {}
     xbmclog("get_lights_by_ids(light_ids={})".format(light_ids))
     if light_ids == None:
-        lifx_lights = get_lights(bridge_ip, username)
+        lifx_lights = get_lights()
         if lifx_lights and len(lifx_lights) > 0:
             lifx_lights_ids = [lifx_light.get_label() for lifx_light in lifx_lights]
             # xbmclog("get_lights_by_ids(light_ids={}) - lifx_lights - {}".format(light_ids, lifx_lights_ids))
@@ -136,16 +95,15 @@ def get_lights_by_ids(bridge_ip, username, light_ids=None):
                     light_id = lifx_light.get_label()
                     xbmclog("get_lights_by_ids(light_ids={}) - Adding {}".format(light_ids, light_id))
                     found[light_id] = lifx_light
-                    # found[light_id] = lights.Light(bridge_ip, username, light_id,
-                                                # lifx_light)
                 except WorkflowException as error:
                     errStrings = ga.formatException()
+                    ga.sendExceptionData(errStrings[0])
                     ga.sendEventData("Exception", errStrings[0], errStrings[1])
                     xbmclog("get_lights_by_ids(light_ids={}) - get_label() for {} - Exception - {}".format(light_ids, lifx_light, str(error)))
     elif light_ids == ['']:
         found = {}
     else:
-        lifx_lights = get_lights(bridge_ip, username)
+        lifx_lights = get_lights()
         if lifx_lights and len(lifx_lights) > 0:
             lifx_dic = {}
             for lifx_light in lifx_lights:
@@ -156,6 +114,7 @@ def get_lights_by_ids(bridge_ip, username, light_ids=None):
                     lifx_light_label = lifx_light.get_label()
                 except WorkflowException as error:
                     errStrings = ga.formatException()
+                    ga.sendExceptionData(errStrings[0])
                     ga.sendEventData("Exception", errStrings[0], errStrings[1])
                     xbmclog("get_label({}) - Exception - {}".format(lifx_light_label,str(error)))
 
@@ -165,11 +124,10 @@ def get_lights_by_ids(bridge_ip, username, light_ids=None):
                 if light_id in lifx_dic:
                     xbmclog("get_lights_by_ids(light_ids={}) - Found {}".format(light_ids, light_id))
                     found[light_id] = lifx_dic[light_id]
-                    # found[light_id] = lights.Light(bridge_ip, username, light_id,
-                                            # lifx_light)
+                    # found[light_id] = lights.Light(light_id, lifx_light)
                 else:
                     # Try to discover the light_id if not found in the cache
-                    lifx_light = get_light_by_id(bridge_ip, username, light_id)
+                    lifx_light = get_light_by_id()
                     if lifx_light:
                         # TODO - remove duplicate code
                         lifx_light_label = lifx_light.mac_addr
@@ -178,95 +136,48 @@ def get_lights_by_ids(bridge_ip, username, light_ids=None):
                             lifx_light_label = lifx_light.get_label()
                         except WorkflowException as error:
                             errStrings = ga.formatException()
+                            ga.sendExceptionData(errStrings[0])
                             ga.sendEventData("Exception", errStrings[0], errStrings[1])
                             xbmclog("get_label({}) - Exception - {}".format(lifx_light_label,str(error)))
 
                         found[light_id] = lifx_light
 
-
     xbmclog("get_lights_by_ids(light_ids={}) - Returning {} Lifx lights".format(light_ids, str(len(found))))
     hide_busy_dialog()
     return found
 
-def get_lights_by_group(bridge_ip, username, group_id):
-    """
-    req = requests.get('http://{}/api/{}/groups/{}'.format(
-        bridge_ip, username, group_id))
-    res = req.json()
-
-    light_ids = res['lights']
-    return get_lights_by_ids(bridge_ip, username, light_ids)
-    """
+# Unused Code for now
+def get_lights_by_group():
     try:
         devices_by_group = lan.get_devices_by_group(group_id)
+        found = {}
+        device_ids = [device.get_label() for device in devices_by_group.get_device_list()]
+        xbmclog("get_lights_by_group(group_id={}) - device_ids - {}".format(group_id, device_ids))
+        for device in devices_by_group.get_device_list():
+            if device.is_light():
+                light_id = device.get_label()
+                found[light_id] = device
     except WorkflowException as error:
         errStrings = ga.formatException()
+        ga.sendExceptionData(errStrings[0])
         ga.sendEventData("Exception", errStrings[0], errStrings[1])
         xbmclog("get_lights_by_group(group_id={}) - Exception - {}".format(group_id, str(error)))
-    # device_ids = [device.get_label() for device in devices_by_group.get_device_list()]
 
-    found = {}
-    for device in devices_by_group.get_device_list():
-        light_id = device.get_label()
-        found[light_id] = lights.Light(bridge_ip, username, light_id,
-                                       device)
+    return get_lights_by_ids(device_ids)
 
-    return get_lights_by_ids(bridge_ip, username, device_ids)
-
-def get_light_by_id(bridge_ip, username, light_id=''):
+def get_light_by_id(light_id=''):
     global lights_cache
-    device = None
+    light = None
     try:
         device = lan.get_device_by_name(light_id)
+        if device != None and device not in lights_cache and device.is_light():
+            light = device
+            lights_cache.append(light)
+            xbmclog("get_light_by_id(light_id={}) - Found new device".format(light_id))
     except WorkflowException as error:
         errStrings = ga.formatException()
+        ga.sendExceptionData(errStrings[0])
         ga.sendEventData("Exception", errStrings[0], errStrings[1])
-        xbmclog("get_lights(refresh={}) - Exception - {}".format(refresh,str(error)))
+        xbmclog("get_light_by_id(light_id={}) - Exception - {}".format(light_id,str(error)))
 
-    if device != None and device not in lights_cache:
-        lights_cache.append(device)
-        xbmclog("get_light_by_id(light_id={}) - Found new device".format(light_id))
-
-    return device
-
-"""
-def _discover_upnp():
-    port = 1900
-    ip = "239.255.255.250"
-    bridge_ip = None
-    address = (ip, port)
-    data = '''M-SEARCH * HTTP/1.1
-    HOST: {}:{}
-    MAN: ssdp:discover
-    MX: 3
-    ST: upnp:rootdevice
-    '''.format(ip, port)
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
-
-    for _ in range(10):
-        try:
-            sock.sendto(data, address)
-            recv, addr = sock.recvfrom(2048)
-            if 'IpBridge' in recv and 'description.xml' in recv:
-                bridge_ip = recv.split('LOCATION: http://')[1].split(':')[0]
-                break
-            time.sleep(3)
-        except socket.timeout:
-            # if the socket times out once, its probably not going to
-            # complete at all. fallback to nupnp.
-            break
-
-    return bridge_ip
-
-def _discover_nupnp():
-    # verify false hack until meethue fixes their ssl cert.
-    req = requests.get('https://www.meethue.com/api/nupnp', verify=False)
-    res = req.json()
-    bridge_ip = None
-    if res:
-        bridge_ip = res[0]["internalipaddress"]
-
-    return bridge_ip
-"""
+    return light
