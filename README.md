@@ -74,7 +74,7 @@ This [Kodi](https://kodi.tv/) add-on controls [Lifx](http://www.lifx.com/) light
 
 
 ## Installation
-[![Installation](https://i.imgur.com/zBTnlvo.gif)](https://i.imgur.com/zBTnlvo.gif)
+[![Installation](https://i.imgur.com/OTJeEvI.gif)](https://i.imgur.com/OTJeEvI.gif)
 
 ### Stable release
   - Open Kodi
@@ -101,8 +101,11 @@ This [Kodi](https://kodi.tv/) add-on controls [Lifx](http://www.lifx.com/) light
 
 
 ## Configurations
+### Light Groups
+[![Setting up Light Groups](https://i.imgur.com/zBTnlvo.gif)](https://i.imgur.com/zBTnlvo.gif)
 
-[![Configurations](https://i.imgur.com/1tZhC9G.gif)](https://i.imgur.com/1tZhC9G.gif)
+### Other settings
+[![Other Configurations](https://i.imgur.com/1tZhC9G.gif)](https://i.imgur.com/1tZhC9G.gif)
 
 ## Example Use Case
 I have 7 Lifx lights - `TV Left`, `TV Right`, `Ceiling 1`, `Ceiling 2`, `Kitchen 1`, `Kitchen 2`, `Hallway`.
