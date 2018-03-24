@@ -24,7 +24,7 @@ class Settings():
             if k == "hue" or k == "readonce":
                 continue
             try:
-                self.hue.ga.sendEventData("Settings", "Default", k, int(v), ni=1)
+                self.hue.ga.sendEventData("Settings", k, str(v), ni=1)
             except Exception:
                 pass
         self.readonce = True
@@ -55,7 +55,7 @@ class Settings():
             if k == "ambilight_group" or k == "theater_group" or k == "theater_subgroup" or k == "static_group":
                 v = len(str(v).split(','))
             try:
-                self.hue.ga.sendEventData("Settings","Update", k, int(v))
+                self.hue.ga.sendEventData("Update", k, str(v))
             except Exception:
                 pass
 

@@ -216,7 +216,7 @@ class Service(object):
                         self.lastMetricPing = time.time()
                         ga = GoogleAnalytics()
                         # Keep the session alive
-                        ga.sendEventData("Playback", "Video", "Playing", None, 1)
+                        ga.sendEventData("Playback", "Playing", "Video", None, 1)
                     try:
                         pixels = capture.getImage(200)
                         if len(pixels) > 0:
