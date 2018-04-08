@@ -158,4 +158,4 @@ class Settings():
             self.update(ambilight_min=self.ambilight_max)
 
     def __repr__(self):
-        return '<Settings\n{}\n>'.format('\n'.join(['{}={}'.format(key, value) for key, value in self.__dict__.items()]))
+        return '<Settings\n{}\n>'.format('\n'.join(['{}={}'.format(key, value) for key, value in sorted(self.__dict__.items())]))

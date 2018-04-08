@@ -50,10 +50,10 @@ class Light(object):
 
         self.init_hue = self.color[0]
         self.hue = self.init_hue
-        self.init_sat = self.color[1]*255/65535
+        self.init_sat = int(self.color[1]*255/65535)
         self.sat = self.init_sat
 
-        self.init_bri = self.color[2]*255/65535
+        self.init_bri = int(self.color[2]*255/65535)
         self.bri = self.init_bri
 
         self.init_kel = self.color[3]
@@ -129,7 +129,7 @@ class Light(object):
             # if `kel` is not neutral, reset `hue`, `sat` to initial values
             if kel != 3500:
                 self.hue = self.init_hue
-                self.sat = self.init_hue
+                self.sat = self.init_sat
                 state['hue'] = self.init_hue
                 state['sat'] = self.init_sat
 
