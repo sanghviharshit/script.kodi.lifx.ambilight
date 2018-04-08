@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-    <addon id="script.kodi.lifx.ambilight" version="1.0.2"
+    <addon id="script.kodi.lifx.ambilight" version="1.0.3"
       name="Lifx Ambilight" provider-name="Harshit Sanghvi">
     <requires>
         <import addon="xbmc.python" version="2.25.0"/>
@@ -27,7 +27,7 @@
         <source>https://github.com/sanghviharshit/script.kodi.lifx.ambilight</source>
         <email>hello@sanghviharshit.com</email>
         <news>
-            1.0.2 (2018-03-21) and 1.0.0 (2018-03-08)
+            v1.0.x (2018-03-08 - 2018-04-07)
             - Bugfix and better error handling
             - All new version with lots of new features and stability
             - Ported latest code (much better organized) from mpolednik/script.kodi.hue.ambilight with lots of new features (e.g. setup wizard for light groups)

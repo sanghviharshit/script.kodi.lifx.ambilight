@@ -1,35 +1,41 @@
-1.0.1 (2018-03-21)
+1.0.3 (2018-04-07)
+- fix - saturation value out of range
+
 1.0.2 (2018-03-21)
-- Bugfix and better error handling
+- fix - incorrect version
+
+1.0.1 (2018-03-21)
+- fix - minor fixes
+- feature - better error handling
 
 1.0.0 (2018-03-08)
-- All new version with lots of new features and stability
-- Ported latest code (much better organized) from mpolednik/script.kodi.hue.ambilight with lots of new features (e.g. setup wizard for light groups)
-- Improved algorithm for calculating color and brightness from picture frame for Ambilight
-- Updated to the latest Lifxlan module
-- New settings (including color_variation flag for multiple lights)
-- Better logging
-- Improved performance
-- Kodi v17+ only
+- feature - All new version with lots of new features and stability
+- feature - Ported latest code (much better organized) from mpolednik/script.kodi.hue.ambilight with lots of new features (e.g. setup wizard for light groups)
+- feature - Improved algorithm for calculating color and brightness from picture frame for Ambilight
+- feature - Updated to the latest Lifxlan module
+- feature - New settings (including color_variation flag for multiple lights)
+- feature - Better logging
+- feature - Improved performance
+- note - Kodi v17+ only
 
 0.1.3 (2018-03-02)
 - better exception handling when light state update fails
 
 0.1.2 (2017-09-28)
-- Updated LifxLAN version
+- feature - Updated LifxLAN version
 
 0.1.1 (2016-08-28)
 - fix - restore power state to off when video stops
 
 0.1.0 (2016-08-26)
-- feature packed major release
+- feature - lots of new features
 - feature - now it's possible to have ambilight on for a group and just dim another group of bulbs or all bulbs.
 - feature - same or different color for all lights
 - feature - override kelvin when dimmed (started/resumed) and undimmed(paused/stopped)
 - fix - better state checking, so restores lights state when video stops
 
 0.0.2 (2016-08-24)
-- Bug fix (settings)
+- fix - settings
 
 0.0.1 (2016-08-22)
-- Initial Release
+- feature - Initial Release
