@@ -19,8 +19,7 @@ This [Kodi](https://kodi.tv/) add-on controls [Lifx](http://www.lifx.com/) light
   Lights in the theater group act like wall lights in a typical theater. When playback starts the lights dim and they undim when playback is paused or ends. If you only want some of the lights to undim during pause, it is possible to configure "subgroup" in add-on settings -> Theater and only dim the subgroup.
 ### Ambilight Group
   **[Ambilight](https://en.wikipedia.org/wiki/Ambilight)** group tries to control the lights similarly to modern ambilight TVs. The add-on tries to figure out the most represented colors and brightness in each frame and change the lights to reflect that. They can also be configured to work similarly to theater group when playback is paused.
-  Turns the Lifx lights in `Ambilight` group in to a room-sized  environment.
-
+  
 ### Static Group
   Static lights act opposite to the theater lights -- they are turned on when playback starts, turned off when you pause the playback and go back to initial state after the playback stops.
 
@@ -74,7 +73,7 @@ This [Kodi](https://kodi.tv/) add-on controls [Lifx](http://www.lifx.com/) light
 
 
 ## Installation
-[![Installation](https://i.imgur.com/OTJeEvI.gif)](https://i.imgur.com/OTJeEvI.gif)
+[![Installation](https://i.imgur.com/txwrzsr.gifv)](https://i.imgur.com/txwrzsr.gifv)
 
 ### Stable release
   - Open Kodi
@@ -130,21 +129,7 @@ For this, you can configure the addon settings as the following
 
 ## Known Issues
 
-**Raspberry Pi users:**
-  - Save the add-on configuration by exiting Kodi before shutting down the Pi completely
-Ambilight mode doesn't work on a Raspberry Pi due to the way it renders video
-
-**ARM based devices/Nexus Player/Any other Android devices:**
-  - Try disabling Mediacodec (Surface) in Settings > Video> Acceleration. This seems to fix the problem. [Reference](https://github.com/michaelrcarroll/script.kodi.hue.ambilight/issues/30)
-
-**AppleTV 4K:**
-  - Ambilight mode doesn't properly work with 4k-HD codecs (>1080p) when "hardware acceleration AVFoundation" is enabled.
-
-**Nvidia Shield / most Android boxes:**
-  - Ambilight mode doesn't properly work with 4k-HD codecs (>1080p) when "allow hardware acceleration - Mediacodec (Surface)" is enabled.
-
-**Addon settings:**
-  - When configuring groups, for window to properly react, one has to press OK after selecting the bulbs and then OK to exit the configuration and re-enter it
+- [Link](https://github.com/sanghviharshit/script.kodi.lifx.ambilight/blob/develop/changelog.txt)
 
 ## Todo:
   - Credits undimming was removed, will be reimplemented when the state checking gets more robust
