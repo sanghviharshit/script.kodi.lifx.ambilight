@@ -44,11 +44,11 @@ class GoogleAnalytics():
     def __init__(self):
 
         self.client_info = clientinfo.ClientInfo()
-        self.version = client_info.get_version()
-        self.app_name = client_info.get_addon_name()
-        self.app_id = client_info.get_addon_id()
+        self.version = self.client_info.get_version()
+        self.app_name = self.client_info.get_addon_name()
+        self.app_id = self.client_info.get_addon_id()
         self.app_iid = "python-{}.kodi-{}".format(python_version(), xbmc.getInfoLabel('System.BuildVersion'))
-        self.device_id = client_info.get_device_id()
+        self.device_id = self.client_info.get_device_id()
 
         # user agent string, used for OS and Kodi version identification
         kodi_ver = xbmc.getInfoLabel("System.BuildVersion")
