@@ -43,7 +43,7 @@ class GoogleAnalytics():
 
     def __init__(self):
 
-        client_info = clientinfo.ClientInfo()
+        self.client_info = clientinfo.ClientInfo()
         self.version = client_info.get_version()
         self.app_name = client_info.get_addon_name()
         self.app_id = client_info.get_addon_id()
