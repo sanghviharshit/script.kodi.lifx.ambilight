@@ -79,7 +79,7 @@ def get_lights(refresh=False):
             ga.sendEventData("Metrics", "Devices", "Total", total_lights, 1)
     else:
         xbmclog("get_lights(refresh={}) - Returning {} cached Lifx lights".format(refresh, str(len(lights_cache))))
-    return lights_cache
+    return lights_cache if lights_cache else []
 
 def get_lights_by_ids(light_ids=None):
     show_busy_dialog()

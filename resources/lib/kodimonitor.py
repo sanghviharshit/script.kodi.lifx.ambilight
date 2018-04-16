@@ -4,14 +4,17 @@ import ui
 import clientinfo
 
 from tools import xbmclog
+from ga_client import GoogleAnalytics
 
 class KodiMonitor(xbmc.Monitor):
 
     hue_service = None
+    ga = None
 
     def __init__(self):
         xbmclog('In KodiMonitor.__init__()')
         xbmc.Monitor.__init__(self)
+        self.ga = GoogleAnalytics()
 
     def onSettingsChanged(self):
         xbmclog('In onSettingsChanged()')
