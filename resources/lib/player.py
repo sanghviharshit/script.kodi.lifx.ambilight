@@ -16,8 +16,8 @@ class Player(xbmc.Player):
         xbmc.Player.__init__(self)
         self.ga = GoogleAnalytics()
 
-    def onPlayBackStarted(self):
-        xbmclog('In KodiPlayer.onPlayBackStarted()')
+    def onAVStarted(self):
+        xbmclog('In KodiPlayer.onAVStarted()')
         if self.isPlayingVideo():
             self.playingvideo = True
             self.duration = self.getTotalTime()
