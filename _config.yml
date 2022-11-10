@@ -1,6 +1,7 @@
 title: Lifx Ambilight Addon for Kodi
 description: Kodi add-on for Lifx lights with ambilight support.
-google_analytics: UA-83116503-1
+# @Todo: Revert temp Fix for GA4. See https://github.com/pages-themes/cayman/issues/161
+google_analytics: G-ZKDNXYBJTK
 show_downloads: true
 theme: jekyll-theme-cayman
 
